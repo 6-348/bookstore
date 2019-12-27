@@ -3,12 +3,14 @@
 from flask import Flask
 # from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Float, DateTime, create_engine, PrimaryKeyConstraint, desc, \
-    Sequence,and_
+    Sequence,and_,desc
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import IntegrityError, DataError
 import random
 import Global as Global
+from app.model.Global import DbURL
+
 Base = declarative_base()
 
 def create_session(engine):
@@ -17,16 +19,34 @@ def create_session(engine):
     return session
 
 
+def create_session(engine):
+    '''
+    在传入的数据库engine上建立新的session
+    :param engine:
+    :return: new_session
+    '''
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
+    return session
+
+
 class Users(Base):
     __tablename__ = 'Users'
-    UserId = Column(String(100), Sequence('user_id_seq'), primary_key=True)
-    UserName = Column(String(10))
+
+    UserId = Column(String(100), Sequence('user_id_seq'), primary_key=True, autoincrement=False)
+    UserName = Column(String(100))
     HaveStore = Column(Boolean, nullable=False)
-    Balance = Column(Float(precision=10, decimal_return_scale=2))
-    Password = Column(String(10))
-    Terminal = Column(String(10))
-    Token = Column(String(100))
- 
+    Balance = Column(Float(precision=10, decimal_return_scale=2), default=0)
+    Password = Column(String(100), nullable=False)
+    Terminal = Column(String(100))
+
+    def __init__(self, UserId: str, UserName: str, HaveStore: bool, Balance: float, Password: str, Terminal: str):
+        self.UserId = UserId
+        self.UserName = UserName
+        self.HaveStore = HaveStore
+        self.Balance = Balance
+        self.Password = Password
+        self.Terminal = Terminal
 
 
 class Stores(Base):
@@ -61,7 +81,7 @@ class StoreBooks(Base):
     BookIntro = Column(String(10))
     Content = Column(String(10))
     Tags = Column(String(500))
-    PictureId = Column(String(500), ForeignKey("BookPictures.PictureId"))
+    PictureId = Column(String(500))  # 删除了外键盘
 
 
 class BookPictures(Base):
