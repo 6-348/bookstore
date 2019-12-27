@@ -8,15 +8,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import IntegrityError, DataError
 import random
-import Global as Global
+import app.model.Global as Global
 from app.model.Global import DbURL
 
 Base = declarative_base()
-
-def create_session(engine):
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-    return session
 
 
 def create_session(engine):
@@ -28,8 +23,6 @@ def create_session(engine):
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     return session
-
-
 class Users(Base):
     __tablename__ = 'Users'
 
@@ -67,21 +60,21 @@ class StoreBooks(Base):
     Stock = Column(Integer)
     # book info
     BookId = Column(String(100), Sequence('book_id_seq'))
-    Title = Column(String(10), nullable=False)
-    Author = Column(String(10))
-    Publisher = Column(String(10))
-    OriginalTitle = Column(String(10))
-    Translator = Column(String(10))
-    PubYear = Column(String(10))
+    Title = Column(String(100), nullable=False)
+    Author = Column(String(100))
+    Publisher = Column(String(100))
+    OriginalTitle = Column(String(100))
+    Translator = Column(String(100))
+    PubYear = Column(String(100))
     Pages = Column(Integer)
     Price = Column(Float(precision=10, decimal_return_scale=2), nullable=False)
-    Binding = Column(String(10))
-    Isbn = Column(String(10))
-    AuthorIntro = Column(String(10))
-    BookIntro = Column(String(10))
-    Content = Column(String(10))
-    Tags = Column(String(500))
-    PictureId = Column(String(500))  # 删除了外键盘
+    Binding = Column(String(100))
+    Isbn = Column(String(100))
+    AuthorIntro = Column(String(1000))
+    BookIntro = Column(String(100000))
+    Content = Column(String(1000))
+    Tags = Column(String(1000))
+    PictureId = Column(String(1000))  # 删除了外键
 
 
 class BookPictures(Base):
@@ -89,9 +82,9 @@ class BookPictures(Base):
     __table_args__ = (
         PrimaryKeyConstraint('PictureId'),
     )
-    PictureId = Column(String(500), primary_key=True)
+    PictureId = Column(String(1000), primary_key=True)
     BookId = Column(String(100), ForeignKey("StoreBooks.BookId"))
-    Address = Column(String(100)) # 图片命名：userId + 上传时间戳
+    Address = Column(String(1000)) # 图片命名：userId + 上传时间戳
     # 图片保存参考：https://blog.csdn.net/mingyuli/article/details/82853812
 
 

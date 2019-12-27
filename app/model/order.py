@@ -2,7 +2,7 @@
 import app.model.Global as Global
 import json 
 from app.model.create_db import Users,Orders,UserToken,OrderBooks,StoreBooks,create_session
-from app.model.user import User
+from app.model.user import UsersMethod
 import app.model.error as error
 import logging
 from datetime import datetime
@@ -20,6 +20,7 @@ def to_dict(result:object,dropwords:list)->dict:
 class Order():
     def __init__(self):
         self.engine = create_engine(Global.DbURL)
+        u = UsersMethod()
     def order_status(self,user_id:str,order_id:str,token:str)-> (str,str):
             '''
             0. check_token
@@ -29,7 +30,7 @@ class Order():
             如果订单存在 返回订单信息和code =200
             '''
             # check token 
-            code,message = User().check_token(token)
+            code,message = u.check_token(token)
             if(code!=200):
                 return code,message
             # check order exist 
@@ -59,7 +60,7 @@ class Order():
         1. 找出所有订单
         2. 返回
         """
-        code,message = User().check_token(user_id,token)
+        code,message = u.check_token(user_id,token)
         if(code!=200):
             return code,message
         session = create_session(self.engine)
@@ -94,7 +95,7 @@ class Order():
         @request: order_id, user_id,token
         :return:
         '''
-        code,message = User().check_token(user_id,token)
+        code,message = u.check_token(user_id,token)
         if(code!=200):
             return code,message
         session = create_session(self.engine)

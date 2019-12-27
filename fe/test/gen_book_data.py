@@ -22,6 +22,7 @@ class GenBook:
         ok = True
         book_db = book.BookDB()
         rows = book_db.get_book_count()
+        print(rows)
         start = 0
         if rows > max_book_count:
             start = random.randint(0, rows - max_book_count)
@@ -29,6 +30,7 @@ class GenBook:
         books = book_db.get_book_info(start, size)
         book_id_exist = []
         book_id_stock_level = {}
+        print("books", books)
         for bk in books:
             if low_stock_level:
                 stock_level = random.randint(0, 100)

@@ -1,13 +1,14 @@
 import app.model.Global as Global
 import json 
 from app.model.create_db import Users,BookPictures,Orders,Stores,UserToken,OrderBooks,StoreBooks,create_session
-from app.model.user import UserMethod
+from app.model.user import UsersMethod
 import app.model.error as error
 import logging
 from datetime import datetime
 from sqlalchemy import and_,update,create_engine
 from sqlalchemy.orm import sessionmaker
-import numpy as np 
+import numpy as np
+import base64
 def to_dict(result:object,dropwords:list)->dict:
     dic = {}
     for att in dir(result):
@@ -18,14 +19,18 @@ def to_dict(result:object,dropwords:list)->dict:
     return dic
 def save_img(picture:bytes,picture_address):
     # 图片保存参考：https://blog.csdn.net/mingyuli/article/details/82853812
-    a = 1 # 待完成函数，存储图片
-    
+    # 待完成函数，存储图片
+    img = base64.b64decode(picture)
+    file = open(picture_address, 'wb')
+    file.write(img)
+    file.close()
+
 # a = StoreBooks()
 # print(to_dict(a,[]))
 class Seller():
     def __init__(self):
         self.engine = create_engine(Global.DbURL)
-        self.user_method = UserMethod()
+        self.user_method = UsersMethod()
 
     # 创建商铺
     def create_store(self, user_id,store_id,token):
@@ -34,7 +39,7 @@ class Seller():
         @request: user_id,store_id,token
         3. stores创建新的一行
         '''
-        code,message = self.user_method.check_token(user_id,token)
+        code,message = self.user_method.check_token(token, user_id)
         if code!=200:
             return code,message
         try:
@@ -43,7 +48,7 @@ class Seller():
             session.add(storeline)
             session.commit()
         except Exception as e:
-            logging.error("app.model.seller.py create_store line 31"+e)
+            logging.error("app.model.seller.py create_store line 31: {}".format(e))
             session.rollback()
             return error.error_exist_store_id(store_id)
         finally:
@@ -67,7 +72,7 @@ class Seller():
         :return:
         '''
         logging.debug("add_book has run")
-        code,message = self.user_method.check_token(user_id,token)
+        code,message = self.user_method.check_token(token, user_id)
         if code!=200:
             return code,message
         try:
@@ -80,30 +85,36 @@ class Seller():
             # 插入bookline 如果两种情况不成功，1. 部分信息的nullable 不满足；2. BookId 已经存在
             #-----注意插入的时候要考虑，book_info 里面的属性不完全的情况
             book_id = book_info['id']
+            logging.debug("book_id: {}".format(book_id))
             bookline = session.query(StoreBooks).filter(StoreBooks.BookId==book_info["id"]).first()
-            if bookline ==None:
+            if bookline !=None:
                 return error.error_exist_book_id(book_info["id"])
             # 修改数据库：            
                 # tags
-            Tags = ""
-            if "tags" not  in list(book_info.keys()):
+            Tags = None
+            if "tags" not in list(book_info.keys()):
                 Tags = None
             else:
+                Tags = ""
                 for tag in book_info['tags']:
-                    Tags+=","+tag
+                    Tags+=tag+","
                 # pictures:BookPictures
             picture_id_list = []
-            if "pictures" not in book_info["pictures"]:
-                picture_id_list = None
+            picobj_list = []
+            if "pictures" not in list(book_info.keys()):
+                logging.debug("i don't have pictures")
+                picture_id_list = []
             else:
+                logging.debug("i have pictures: {}".format(book_info["pictures"]))
                 for picture in book_info["pictures"]:  
-                    timestr = datetime.now().strftime('%a-%b-%d-%H:%M:%S')
+                    timestr = datetime.now().strftime('%a-%b-%d-%H-%M-%S')
                     picturename = store_id+book_id+timestr+ str(np.random.randint(0,100))+".png"
                     picture_address = Global.PicturePath+picturename
-                    save_img(picture,picture_address)
+                    # save_img(picture,picture_address)
+                    logging.debug("picture_address:{}"+picture_address)
                     picture_id = picturename
-                    pic = BookPictures(PictureId= picture_id,Address= picture_address,BookId = book_id)
-                    session.add(pic)
+                    picobj = BookPictures(PictureId= picture_id,Address= picture_address,BookId = book_id)
+                    picobj_list.append(picobj)
                     picture_id_list.append(picture_id)            
                  # 防止book_info 里面内容不完整，所以补全 
                  # StoreBooks 
@@ -117,7 +128,7 @@ class Seller():
                 "pub_year":"PubYear",
                 "pages": "Pages",
                 "price": "Price",
-               " binding": "Binding",
+               "binding": "Binding",
                 "isbn": "Isbn",
                 "author_intro": "AuthorIntro",
                 "book_intro":  "BookIntro",
@@ -125,15 +136,30 @@ class Seller():
                 "tags": "Tags",
             }
             book = StoreBooks(StoreId = store_id,
-            BookId = book_id,
-            Stock = stock_level)
-            for info in list(book_info.keys()):
+            BookId = book_id,Stock = stock_level, Tags = Tags)
+
+            logging.debug("book_info.keys(){}".format(book_info.keys()))
+            keylist = list(book_info.keys())
+            keylist.remove("tags")
+            keylist.remove("pictures")
+            logging.debug("book_info: {}".format(book_info))
+            for info in keylist:
                 db_attr = map_testtodb[info]
-                setattr(book,db_attr,book_info[info])
-            session.add(book)
+                logging.debug(db_attr+":"+info+": {}".format(book_info[info]))
+                setattr(book, db_attr, book_info[info])
+            if picture_id_list==[]:
+                session.add(book)
+            else:
+                for picobj in picobj_list:
+                    setattr(book, "PictureId", picobj.PictureId)
+                    session.add(book)
+                    session.add(picobj)
+
             session.commit()
+
         except Exception as e:
-            logging.error("app.model.seller.py add_book line 134"+e)
+            logging.debug(e)
+            logging.debug("app.model.seller.py add_book line 134: {}".format(e))
             session.rollback()
             return error.error_and_message(530,"invalid book info")
         finally:
@@ -151,7 +177,7 @@ class Seller():
         :return:
         '''
         # check token
-        code,message = self.user_method.check_token(user_id,token)
+        code,message = self.user_method.check_token(token, user_id)
         if(code!=200):
             return code,message
         # add_stock_level >0?
@@ -162,17 +188,20 @@ class Seller():
             session = create_session(self.engine)
             bookline = session.query(StoreBooks).filter(StoreBooks.BookId==book_id).first()
             if bookline==None: # book_id exist?
+                logging.debug("book_id not exist")
                 return error.error_non_exist_book_id(book_id)
             if bookline.StoreId!=store_id: # book_id 和 store_id 匹配？
+                logging.debug("book_id 和 store_id 不匹配")
                 return error.error_invalid_store_id(store_id)
             storeline = session.query(Stores).filter(Stores.StoreId==store_id).first()
             if storeline.UserId!=user_id: # book_id 和 user_id 不匹配
+                logging.debug("book_id 和 user_id 不匹配")
                 return error.error_invalid_store_id(store_id)
             # 修改数据库：
             bookline.update({"Stock": bookline.Stock+add_stock_level})
             session.commit()
         except Exception as e:
-            logging.error("app.model.seller.py add_stock line174"+e)
+            logging.debug("app.model.seller.py add_stock line174 {}".format(e))
             session.rollback()
         finally:
             session.close()
@@ -205,7 +234,7 @@ class Seller():
                         {Orders.Status:"3"}))
             session.commit()
         except Exception as e :
-            logging.error("app.model.seller.py dlivery_books line 185: "+ e)
+            logging.debug("app.model.seller.py dlivery_books line 185:{}".format(e))
             session.rollback()
         finally:
             session.close()
