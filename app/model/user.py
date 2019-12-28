@@ -1,21 +1,3 @@
-<<<<<<< HEAD
-
-from app.model.create_db import Users,Orders,UserToken,create_session
-from datetime import datetime
-from app.model import error 
-from sqlalchemy import Column, String, Integer, Boolean,ForeignKey,Float,update, create_engine, PrimaryKeyConstraint, desc,delete,and_
-
-class UserMethod():
-    
-    # 检查token
-    def check_user(self, user_id):
-        '''
-        检查用户是否存在
-        :param user_id:
-        :return:true/false
-        '''
-        return True
-=======
 import datetime
 import time
 import jwt
@@ -67,8 +49,10 @@ class UsersMethod():
         """
         data = {"user_id": "", "terminal": ""}
         try:
-            # payload = jwt.decode(auth_token, app.config.get('SECRET_KEY'), leeway=datetime.timedelta(seconds=10))
+            # payload = jwt.decode(token, SECRET_KEY, leeway=datetime.timedelta(seconds=1000))
+            logging.debug(token)
             payload = jwt.decode(token, SECRET_KEY, options={'verify_exp': False})
+
             if 'data' in payload and 'id' in payload['data'] and 'terminal' in payload['data']:
                 logging.debug("in _decode_token: not in")
                 data['user_id'] = payload['data']['id']
@@ -93,8 +77,9 @@ class UsersMethod():
             session.add(new_user)
             session.commit()
             return 200, "ok"
-        except DatabaseError:
+        except DatabaseError as e:
             session.rollback()
+            logging.debug(e)
             return error.error_exist_user_id(user_id)
         finally:
             session.close()
@@ -202,7 +187,6 @@ class UsersMethod():
             return error.error_non_exist_user_id(user_id)
         session.close()
         return 200, "ok"
->>>>>>> dailin
 
     def check_password(self, user_id, password):
         '''
@@ -211,18 +195,6 @@ class UsersMethod():
         :param password:
         :return: true/false
         '''
-<<<<<<< HEAD
-        return True
-    def check_token(self,user_id,token):
-        session = create_session(self.engine)
-        localtime = datetime.now()
-        line  = session.query(UserToken).filter(and_(UserToken.UserId==user_id,UserToken.DeadTime<=localtime)).first()
-        session.close()
-        if(line.Token == token):
-            return error.success("Token Authorize")
-        else:
-            return error.error_authorization_fail()
-=======
         session = create_session(self.engine)
         cursor = session.query(Users).filter(Users.UserId == user_id).all()  # query.all() returns a list
         if len(cursor) == 0:
@@ -234,4 +206,3 @@ class UsersMethod():
             return error.error_authorization_fail()
 
         return 200, "ok"
->>>>>>> dailin

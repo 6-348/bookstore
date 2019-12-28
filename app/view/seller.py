@@ -12,6 +12,15 @@ seller = Seller()
 
 @bp_seller.route("/create_store", methods=["POST"])  # 创建商铺
 def create_store():
+    """
+    {
+    "store_id": " StoreName",
+    "user_id": "user1",
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1Nzc0MzU4OTAsImlhdCI6MTU3NzQzNTg4MCwiaXNzIjoia2VuIiwiZGF0YSI6eyJpZCI6InVzZXIxIiwidGVybWluYWwiOiJ0ZXJtaW5hbCJ9fQ.7CBZtRbfxnsquQVeANoG0eQg7GzsWXysAfU6hBEPQP4"
+
+    }
+    :return:
+    """
     store_id = request.json.get("store_id")
     user_id  = request.json.get("user_id")
     token = request.headers.get("token")
@@ -26,7 +35,8 @@ def add_bookinfo():
     book_info  = request.json.get("book_info")
     stock_level = request.json.get("stock_level")
     token = request.headers.get("token")
-    code,message = seller.add_bookinfo(user_id, store_id,book_info,stock_level,token)
+    # logging.debug(request.json)
+    code, message = seller.add_bookinfo(user_id, store_id,book_info,stock_level,token)
     return jsonify({"message": message}), code
 
 

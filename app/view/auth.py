@@ -12,9 +12,6 @@ bp_auth = Blueprint("auth", __name__, url_prefix="/auth")
 u = UsersMethod()
 
 
-<<<<<<< HEAD
-@bp_auth.route("/login", methods=["POST"])
-=======
 @bp_auth.route("/register", methods=['POST'])
 def register():
     '''
@@ -31,7 +28,6 @@ def register():
 
 
 @bp_auth.route("/login", methods=['POST'])
->>>>>>> dailin
 def login():
     '''
     @request:{
@@ -49,24 +45,6 @@ def login():
     code, message, token = u.login(user_id, password, terminal)
     return jsonify({"message": message, "token": token}), code
 
-
-<<<<<<< HEAD
-@bp_auth.route("/logout", methods=["POST"])
-def logout():
-    logging.debug("loginout has run")
-    message = "messages from login funcion"
-    code = 222
-    token = "return from login function"
-    return jsonify({"message": message, "token": token}), code
-
-
-@bp_auth.route("/register", methods=["POST"])
-def register():
-    logging.debug("register has run")
-    message = "messages from login funcion"
-    code = 222
-    token = "return from login function"
-=======
 @bp_auth.route("/password", methods=['POST'])
 def change_password():
     '''
@@ -83,7 +61,6 @@ def change_password():
     code, message = u.change_password(user_id, old_password, new_password)
     return jsonify({"message": message}), code
 
-
 @bp_auth.route("/logout", methods=['POST'])
 def logout():
     '''
@@ -96,7 +73,6 @@ def logout():
     user_id = request.json['user_id']
     token = request.headers.get("token")
     code, message = u.logout(user_id, token)
->>>>>>> dailin
     return jsonify({"message": message, "token": token}), code
 
 
@@ -116,13 +92,3 @@ def unregister():
 
 
 
-<<<<<<< HEAD
-@bp_auth.route("/password", methods=["POST"])
-def change_password():
-    logging.debug("changepassword has run")
-    message = "messages from login funcion"
-    code = 222
-    token = "return from login function"
-    return jsonify({"message": message, "token": token}), code
-=======
->>>>>>> dailin

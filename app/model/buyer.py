@@ -7,7 +7,7 @@
 import app.model.Global as Global
 import json 
 from app.model.create_db import Users,Orders,Stores,UserToken,OrderBooks,StoreBooks,create_session
-from app.model.user import UserMethod
+from app.model.user import UsersMethod
 import app.model.error as error
 import logging
 from datetime import datetime
@@ -17,7 +17,7 @@ from sqlalchemy.orm import sessionmaker
 class Buyer:
     def __init__(self):
         self.engine = create_engine(Global.DbURL)
-        self.user_method = UserMethod()
+        self.user_method = UsersMethod()
     
     # 下单 
     def neworder(self,user_id,store_id,books:list,token):
@@ -30,7 +30,7 @@ class Buyer:
         '''
         timestr = datetime.now().strftime('%a-%b-%d-%H:%M:%S')
         order_id =store_id+user_id+timestr # order_id 的生成
-        code,message = self.user_method.check_token(user_id,token)
+        code,message = self.user_method.check_token(token, user_id)
         if code!=200:
             return code,message,order_id
         try:
@@ -76,7 +76,7 @@ class Buyer:
         4. 减少买家余额
         5. 修改order.status
         '''
-        code,message = self.user_method.check_token(user_id,token)
+        code,message = self.user_method.check_token(token, user_id)
         if code!=200:
             return code,message
         try: 
@@ -113,7 +113,7 @@ class Buyer:
         3. 修改用户金额
         '''
         logging.debug("topup has run")
-        code,message = self.user_method.check_token(user_id,token)
+        code,message = self.user_method.check_token(token, user_id)
         if code!=200:
             return code,message
         try:
@@ -143,7 +143,7 @@ class Buyer:
         减少用户balance
         '''
         logging.debug("withdraw has run")
-        code,message = self.user_method.check_token(user_id,token)
+        code,message = self.user_method.check_token(token, user_id)
         if code!=200:
             return code,message
         try:
@@ -174,7 +174,7 @@ class Buyer:
         4. 修改orders.status为已确认收货
         '''
         logging.debug("withdraw has run")
-        code,message = self.user_method.check_token(user_id,token)
+        code,message = self.user_method.check_token(token, user_id)
         if code!=200:
             return code,message
         try:
@@ -214,7 +214,7 @@ class Buyer:
         6. 修改users.balance
         '''
         logging.debug("withdraw has run")
-        code,message = self.user_method.check_token(user_id,token)
+        code,message = self.user_method.check_token(token, user_id)
         if code!=200:
             return code,message
         try:

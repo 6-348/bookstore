@@ -79,7 +79,3 @@ def error_authorization_fail():
 def error_and_message(code, message):
     return code, message
 
-<<<<<<< HEAD
-=======
-
->>>>>>> dailin
