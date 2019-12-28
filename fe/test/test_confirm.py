@@ -78,23 +78,18 @@ class TestConfirm:
         code = self.buyer.confirm_reception(self.buyer_id,self.order_id,self.buyer.password)
         assert code != 200
 
-    '''@exception: Order.Status==3?'''
-    def test_order_status_error(self):
-        code = self.seller.delivery_books(self.seller_id,self.order_id)
-        assert code == 200
-        '''
-        ??这里存在一个疑问：是否需要重启一个engine、session来模拟外部进程（线程）修改status？这样会不会
-        和测试案例本身运行的进程冲突造成等待？还是修改功能函数的接口返回status属性使他可以直接在类里修改...
-        '''
-        session = create_engine(self.engine)
-        orderline = session.query(Orders).filter(Orders.OrderId==order_id).first()
-        status = int(orderline.status) /3 + 3 # 状态存储成字符形式的“1/2/3/4/5”
-        orderline.update({"Status": str(status)}) #只有状态3经过转换后仍然合法
-        code = self.seller.delivery_books(self.seller_id,self.order_id)
-        assert code !== 200
 
     '''@exception: no delivery?'''
     def test_order_status_error(self):
+        code = self.buyer.confirm_reception(self.buyer_id,self.order_id,self.buyer.password)
+        assert code != 200
+
+    '''@exception: repeat confirm'''
+    def test_reppeat_confirm(self):
+        code = self.seller.delivery_books(self.seller_id,self.order_id)
+        assert code == 200
+        code = self.buyer.confirm_reception(self.buyer_id,self.order_id,self.buyer.password)
+        assert code = 200
         code = self.buyer.confirm_reception(self.buyer_id,self.order_id,self.buyer.password)
         assert code != 200
 
