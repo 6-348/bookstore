@@ -11,15 +11,15 @@ from app.model.buyer import Buyer
 bp_buyer = Blueprint("buyer", __name__, url_prefix="/buyer")
 
 buy = Buyer()
-@bp_buyer.route("/neworder", methods=["POST"])  # 下单
+@bp_buyer.route("/new_order", methods=["POST"])  # 下单
 def neworder():
     logging.debug("neworder has run")
     user_id: str = request.json.get("user_id")
-    order_id: str = request.json.get("order_id")
+    store_id: str = request.json.get("store_id")
     token: str = request.headers.get("token")
     books = request.json.get("books")
-    code,message,order_id = buy.neworder(user_id,order_id,books,token)
-    return jsonify({"message": message, "order_id":order_id}), code
+    code, message, order_id = buy.neworder(user_id,store_id,books,token)
+    return jsonify({"message": message, "order_id": order_id}), code
 
 
 @bp_buyer.route("/payment", methods=["POST"])  # 付款

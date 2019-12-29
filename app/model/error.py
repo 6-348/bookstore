@@ -32,7 +32,7 @@ def error_order_can_not_be_cancelled(status):
     return 521,error_code[521].format(status)
 
 def success(message):
-    return 200,error_code[200].format(message)
+    return 200, error_code[200].format(message)
 
 def error_non_exist_user_id(user_id):
     return 511, error_code[511].format(user_id)

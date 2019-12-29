@@ -5,8 +5,9 @@
 
 """
 import app.model.Global as Global
+import numpy as np
 import json 
-from app.model.create_db import Users,Orders,Stores,UserToken,OrderBooks,StoreBooks,create_session
+from app.model.create_db import Users,Orders,Stores,OrderBooks,StoreBooks,create_session
 from app.model.user import UsersMethod
 import app.model.error as error
 import logging
@@ -20,7 +21,7 @@ class Buyer:
         self.user_method = UsersMethod()
     
     # 下单 
-    def neworder(self,user_id,store_id,books:list,token):
+    def neworder(self,user_id,store_id,books,token):
         '''
         @params: user_id,store_id,books = [{"id": id_count_pair[0], "count": id_count_pair[1]},]
         @exceptions: password 错误,token错误，store_id 不存在，书不存在，库存不足，重复下单
@@ -28,32 +29,47 @@ class Buyer:
         4. 减少库存
         5. Order, OrderBooks表格中新建项(新建order的时间是"当前时间+timeout时间期限"
         '''
-        timestr = datetime.now().strftime('%a-%b-%d-%H:%M:%S')
-        order_id =store_id+user_id+timestr # order_id 的生成
+        logging.debug("user_id:{},store_id:{}".format(user_id, store_id))
+        timestr = datetime.now().strftime('%a-%b-%d-%H-%M-%S.%f')
+        order_id =store_id+user_id+timestr+str(np.random.randint(0, 100)) # order_id 的生成
         code,message = self.user_method.check_token(token, user_id)
         if code!=200:
+            logging.debug(message)
+            print("38")
             return code,message,order_id
         try:
             session = create_session(self.engine)
             line = session.query(Stores).filter(Stores.StoreId==store_id).first()
             if line==None:
-                return error.error_invalid_store_id(store_id),order_id
+                code, meassge = error.error_invalid_store_id(store_id), order_id
+                print("44")
+                logging.debug(message)
+                return code, message, order_id
             if line.UserId != user_id:
-                return error.error_invalid_store_id(store_id),order_id
+                code, meassge = error.error_invalid_store_id(store_id), order_id
+                print("48")
+                logging.debug(message)
+                return code, message, order_id
             Amount = 0
+            logging.debug("52")
             for book in books:
                 book_id = book["id"]
                 count = book["count"]
-                bookline = session.query(StoreBooks).filter(StoreBooks.BookId==book_id).first()
+                bookline = session.query(StoreBooks).filter(and_(StoreBooks.BookId==book_id,StoreBooks.StoreId == store_id)).first()
                 if bookline==None:
-                    return error.error_non_exist_book_id(book_id),order_id
-                elif bookline.StoreId != store_id or bookline.Stock < count:
-                    return error.error_non_exist_book_id(book_id),order_id
+                    code, meassge = error.error_non_exist_book_id(book_id),order_id
+                    logging.debug(message)
+                    return code, message, order_id
+                elif bookline.Stock < count:
+                    code, meassge =error.error_non_exist_book_id(book_id)
+                    logging.debug(message)
+                    return code, message, order_id
                 else:
                     Amount+=bookline.Price * count 
             #修改数据库 Orders 增加一条， OrderBooks，每个BookId 增加一条
             order = Orders(OrderId= order_id, StoreId =store_id,UserId = user_id,Status = "1", Amount= Amount,Deadline = datetime.now()+Global.order_timeout_delta)
             session.add(order)
+            logging.debug("63")
             for book in books:
                 book_id = book["id"]
                 count = book["count"]
@@ -63,9 +79,13 @@ class Buyer:
         except Exception as e:
             logging.error("app.model.buy.py line 64"+ e)
             session.rollback()
+            logging.debug(message)
+            return error.error_and_message(100, "commit fail"), order_id
         finally:
             session.close()
-        return error.success("neworder"),order_id
+        code,meassge = error.success("neworder")
+        logging.debug(message)
+        return code, message, order_id
 
 
     # 付款
