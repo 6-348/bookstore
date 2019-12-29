@@ -14,22 +14,11 @@ import logging
 from logging import Logger
 from logging import FileHandler
 import app.view.auth as auth
-<<<<<<< HEAD
 import app.view.buyer as buyer
 import app.view.seller as seller
 import app.view.order as order
 import app.model.Global as Global
 from sqlalchemy import create_engine
-=======
-from flask_sqlalchemy import SQLAlchemy
-import flask_whooshalchemy as wa
-
-# import app.view.buyer as buyer
-# import app.view.seller as seller
-# import app.view.order as order
-from app.model.create_db import StoreBooks
-
->>>>>>> 15a82acb1418828b8a6726c8cfc79a4110d019d3
 
 def create_app(test_config=None):
     # 设置log
@@ -41,15 +30,8 @@ def create_app(test_config=None):
 
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
-<<<<<<< HEAD
     app.config.from_object('config')
     # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:0710@localhost/game'
-=======
-    # app.config.from_object('config')
-    # connect db
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:0710@localhost/game'
-
->>>>>>> 15a82acb1418828b8a6726c8cfc79a4110d019d3
     app.register_blueprint(auth.bp_auth)
     app.register_blueprint(buyer.bp_buyer)
     app.register_blueprint(seller.bp_seller)

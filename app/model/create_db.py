@@ -8,8 +8,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import IntegrityError, DataError
 import random
-import app.model.Global as Global
-from app.model.Global import DbURL
+import Global as Global
+from Global import DbURL
 
 Base = declarative_base()
 
@@ -65,18 +65,6 @@ class StoreBooks(Base):
     Publisher = Column(String(100))
     OriginalTitle = Column(String(100))
     Translator = Column(String(100))
-<<<<<<< HEAD
-    PubYear = Column(String(100))
-    Pages = Column(Integer)
-    Price = Column(Float(precision=10, decimal_return_scale=2), nullable=False)
-    Binding = Column(String(100))
-    Isbn = Column(String(100))
-    AuthorIntro = Column(String(1000))
-    BookIntro = Column(String(100000))
-    Content = Column(String(1000))
-    Tags = Column(String(1000))
-    PictureId = Column(String(1000))  # 删除了外键
-=======
     PubYear = Column(String(10))
     Pages = Column(Integer)
     Price = Column(Float(precision=10, decimal_return_scale=2), nullable=False)
@@ -87,7 +75,6 @@ class StoreBooks(Base):
     Content = Column(String)
     Tags = Column(String)
     PictureId = Column(String)  # 删除了外键
->>>>>>> 15a82acb1418828b8a6726c8cfc79a4110d019d3
 
 
 class BookPictures(Base):
@@ -95,16 +82,10 @@ class BookPictures(Base):
     __table_args__ = (
         PrimaryKeyConstraint('PictureId'),
     )
-<<<<<<< HEAD
-    PictureId = Column(String(10000), primary_key=True)
-    BookId = Column(String(100))
-    Address = Column(String(10000)) # 图片命名：userId + 上传时间戳
-=======
     PictureId = Column(String(500), primary_key=True)
     BookId = Column(String(100), ForeignKey("StoreBooks.BookId"))
     Address = Column(String)
     # 图片命名：userId + 上传时间戳
->>>>>>> 15a82acb1418828b8a6726c8cfc79a4110d019d3
     # 图片保存参考：https://blog.csdn.net/mingyuli/article/details/82853812
 
 
