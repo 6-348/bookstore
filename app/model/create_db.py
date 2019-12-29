@@ -8,8 +8,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import IntegrityError, DataError
 import random
-import Global as Global
-from Global import DbURL
+import app.model.Global as Global
+from app.model.Global import DbURL
 
 Base = declarative_base()
 

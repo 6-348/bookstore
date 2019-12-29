@@ -3,6 +3,7 @@ import pytest
 from fe.access.buyer import Buyer
 from fe.test.gen_book_data import GenBook
 from fe.access.new_buyer import register_new_buyer
+from fe.access.new_seller import register_new_seller
 from fe.access.book import Book
 from fe.access.seller import Seller
 import uuid
@@ -29,8 +30,10 @@ class TestDeliveryBooks:
         ok, buy_book_id_list = gen_book.gen(non_exist_book_id=False, low_stock_level=False, max_book_count=5)
         self.buy_book_info_list = gen_book.buy_book_info_list
         assert ok
+        s = register_new_seller(self.seller_id, self.seller_password)
         b = register_new_buyer(self.buyer_id, self.password)
         self.buyer = b
+        self.seller = s
         code, self.order_id = b.new_order(self.store_id, buy_book_id_list)
         assert code == 200
 
