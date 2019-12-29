@@ -14,11 +14,13 @@ import logging
 from logging import Logger
 from logging import FileHandler
 import app.view.auth as auth
-
+from flask_sqlalchemy import SQLAlchemy
+import flask_whooshalchemy as wa
 
 # import app.view.buyer as buyer
 # import app.view.seller as seller
 # import app.view.order as order
+from app.model.create_db import StoreBooks
 
 
 def create_app(test_config=None):
@@ -33,6 +35,7 @@ def create_app(test_config=None):
     # app.config.from_object('config')
     # connect db
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql+psycopg2://postgres:0710@localhost/game'
+
     app.register_blueprint(auth.bp_auth)
     # app.register_blueprint(buyer.bp_buyer)
     # app.register_blueprint(seller.bp_seller)
@@ -42,4 +45,5 @@ def create_app(test_config=None):
 
 
 if __name__ == "__main__":
+
     app = create_app()

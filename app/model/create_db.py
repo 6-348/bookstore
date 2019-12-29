@@ -57,31 +57,32 @@ class StoreBooks(Base):
     Stock = Column(Integer)
     # book info
     BookId = Column(String(100), Sequence('book_id_seq'))
-    Title = Column(String(10), nullable=False)
-    Author = Column(String(10))
-    Publisher = Column(String(10))
-    OriginalTitle = Column(String(10))
-    Translator = Column(String(10))
+    Title = Column(String(100), nullable=False)
+    Author = Column(String(100))
+    Publisher = Column(String(100))
+    OriginalTitle = Column(String(100))
+    Translator = Column(String(100))
     PubYear = Column(String(10))
     Pages = Column(Integer)
     Price = Column(Float(precision=10, decimal_return_scale=2), nullable=False)
     Binding = Column(String(10))
-    Isbn = Column(String(10))
-    AuthorIntro = Column(String(10))
-    BookIntro = Column(String(10))
-    Content = Column(String(10))
-    Tags = Column(String(500))
-    PictureId = Column(String(500))  # 删除了外键盘
+    Isbn = Column(String(100))
+    AuthorIntro = Column(String)
+    BookIntro = Column(String)
+    Content = Column(String)
+    Tags = Column(String)
+    PictureId = Column(String)  # 删除了外键
 
 
 class BookPictures(Base):
     __tablename__ = 'BookPictures'
     __table_args__ = (
-        PrimaryKeyConstraint('PictureId', 'BookId'),
+        PrimaryKeyConstraint('PictureId'),
     )
     PictureId = Column(String(500), primary_key=True)
-    BookId = Column(String(100), ForeignKey("StoreBooks.BookId"), primary_key=True)
-    Address = Column(String(100))  # 图片命名：userId + 上传时间戳
+    BookId = Column(String(100), ForeignKey("StoreBooks.BookId"))
+    Address = Column(String)
+    # 图片命名：userId + 上传时间戳
     # 图片保存参考：https://blog.csdn.net/mingyuli/article/details/82853812
 
 
