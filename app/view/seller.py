@@ -35,7 +35,11 @@ def add_bookinfo():
     book_info  = request.json.get("book_info")
     stock_level = request.json.get("stock_level")
     token = request.headers.get("token")
+<<<<<<< HEAD
     # logging.debug(request.json)
+=======
+    logging.debug(request.json)
+>>>>>>> origin/mjy
     code, message = seller.add_bookinfo(user_id, store_id,book_info,stock_level,token)
     return jsonify({"message": message}), code
 
