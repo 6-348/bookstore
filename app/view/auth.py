@@ -6,7 +6,7 @@
 import logging
 from flask import jsonify
 from flask import Blueprint, request
-from app.model.user import UsersMethod
+from ..model.user import UsersMethod
 
 bp_auth = Blueprint("auth", __name__, url_prefix="/auth")
 u = UsersMethod()

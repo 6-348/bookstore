@@ -92,10 +92,7 @@ class Seller():
             logging.debug("book_id: {}".format(book_id))
             bookline = session.query(StoreBooks).filter(StoreBooks.BookId==book_info["id"]).first()
             if bookline !=None:
-<<<<<<< HEAD
-=======
                 logging.debug(bookline)
->>>>>>> 390b46e56a50932af067b68e0f0ed6c9fc135ecd
                 return error.error_exist_book_id(book_info["id"])
             # 修改数据库：            
                 # tags
@@ -113,12 +110,6 @@ class Seller():
                 logging.debug("i don't have pictures")
                 picture_id_list = []
             else:
-<<<<<<< HEAD
-                logging.debug("i have pictures: {}".format(book_info["pictures"]))
-                for picture in book_info["pictures"]:  
-                    timestr = datetime.now().strftime('%a-%b-%d-%H-%M-%S')
-                    picturename = store_id+book_id+timestr+ str(np.random.randint(0,100))+".png"
-=======
                 # logging.debug("i have pictures: {}".format(book_info["pictures"]))
                 difcode = 0
                 for picture in book_info["pictures"]:
@@ -126,15 +117,11 @@ class Seller():
                     timestr = datetime.now().strftime('%a-%b-%d-%H-%M-%S.%f')
                     picturename = store_id+book_id+timestr+str(difcode)+ str(np.random.randint(0,100))+".png"
 
->>>>>>> 390b46e56a50932af067b68e0f0ed6c9fc135ecd
                     picture_address = Global.PicturePath+picturename
                     # save_img(picture,picture_address)
                     logging.debug("picture_address:{}"+picture_address)
                     picture_id = picturename
-<<<<<<< HEAD
-=======
                     logging.debug("pcitre_id----------->{}".format(picture_id))
->>>>>>> 390b46e56a50932af067b68e0f0ed6c9fc135ecd
                     picobj = BookPictures(PictureId= picture_id,Address= picture_address,BookId = book_id)
                     picobj_list.append(picobj)
                     picture_id_list.append(picture_id)            
@@ -160,16 +147,6 @@ class Seller():
             book = StoreBooks(StoreId = store_id,
             BookId = book_id,Stock = stock_level, Tags = Tags)
 
-<<<<<<< HEAD
-            logging.debug("book_info.keys(){}".format(book_info.keys()))
-            keylist = list(book_info.keys())
-            keylist.remove("tags")
-            keylist.remove("pictures")
-            logging.debug("book_info: {}".format(book_info))
-            for info in keylist:
-                db_attr = map_testtodb[info]
-                logging.debug(db_attr+":"+info+": {}".format(book_info[info]))
-=======
             keylist = list(book_info.keys())
             keylist.remove("tags")
             keylist.remove("pictures")
@@ -178,23 +155,12 @@ class Seller():
                     continue
                 db_attr = map_testtodb[info]
                 # logging.debug(db_attr+":"+info+": {}".format(book_info[info]))
->>>>>>> 390b46e56a50932af067b68e0f0ed6c9fc135ecd
                 setattr(book, db_attr, book_info[info])
             if picture_id_list==[]:
                 session.add(book)
             else:
                 for picobj in picobj_list:
                     setattr(book, "PictureId", picobj.PictureId)
-<<<<<<< HEAD
-                    session.add(book)
-                    session.add(picobj)
-
-            session.commit()
-
-        except Exception as e:
-            logging.debug(e)
-            logging.debug("app.model.seller.py add_book line 134: {}".format(e))
-=======
                     logging.debug("book_id"+book.BookId + "picobj"+picobj.BookId)
                     session.add(book)
                     session.add(picobj)
@@ -203,7 +169,6 @@ class Seller():
         except Exception as e:
             logging.error(e)
             logging.error("app.model.seller.py add_book line 134: {}".format(e))
->>>>>>> 390b46e56a50932af067b68e0f0ed6c9fc135ecd
             session.rollback()
             # logging.error("invalid book info{}".format(book_info))
             return error.error_and_message(530,"invalid book info")
@@ -248,11 +213,7 @@ class Seller():
             bookline.update({"Stock": bookline.Stock+add_stock_level})
             session.commit()
         except Exception as e:
-<<<<<<< HEAD
-            logging.debug("app.model.seller.py add_stock line174 {}".format(e))
-=======
             logging.error("app.model.seller.py add_stock line174 {}".format(e))
->>>>>>> 390b46e56a50932af067b68e0f0ed6c9fc135ecd
             session.rollback()
         finally:
             session.close()
@@ -287,11 +248,7 @@ class Seller():
                         {Orders.Status:"3"}))
             session.commit()
         except Exception as e :
-<<<<<<< HEAD
-            logging.debug("app.model.seller.py dlivery_books line 185:{}".format(e))
-=======
             logging.error("app.model.seller.py dlivery_books line 185:{}".format(e))
->>>>>>> 390b46e56a50932af067b68e0f0ed6c9fc135ecd
             session.rollback()
         finally:
             session.close()
