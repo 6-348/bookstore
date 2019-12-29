@@ -95,30 +95,39 @@ class Buyer:
         '''
         code,message = self.user_method.check_token(token, user_id)
         if code!=200:
+            print(98)
             return code,message
         try: 
             session = create_session(self.engine)
-            orderline = session.query(Orders).filter(Orders.OrderId==order_id).first()
-            userline = session.query(Users).filter(Users.UserId==user_id).first()
+            orderlines = session.query(Orders).filter(Orders.OrderId==order_id)
+            orderline = orderlines[0]
+            userlines = session.query(Users).filter(Users.UserId==user_id)
+            userline = userlines[0]
             if orderline == None :
+                print(104)
                 return error.error_invalid_order_id(order_id)
-            elif orderline.OrderId != user_id or orderline.Status!="1":
+            elif orderline.OrderId != order_id or orderline.Status !="1":
+                print(107)
                 return error.error_invalid_order_id(order_id)
-            elif userline.password != password:
+            elif userline.Password != password:
+                print(110)
                 return error.error_authorization_fail()
             elif userline.Balance < orderline.Amount:
+                print(113)
                 return error.error_not_sufficient_funds(order_id)        
             else:   # 修改数据库
                 orderline.Status = "2"
                 userline.Balance-=orderline.Amount
-                session.update({"Status":"2"})
-                session.update({"Balance":userline.Balance})
+                orderlines.update({"Status": "2"})
+                userlines.update({"Balance": userline.Balance})
                 session.commit()
         except Exception as e:
             logging.error("app.model.Payment.py line 101 {}".format(e))
             session.rollback()
+            return error.error_and_message("110","commit fail")
         finally:
             session.close()
+        logging.debug("payment successfully")
         return error.success("Payment")
 
 
