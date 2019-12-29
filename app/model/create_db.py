@@ -47,6 +47,7 @@ class Stores(Base):
     Balance = Column(Float(precision=10, decimal_return_scale=2))
 
 
+
 class StoreBooks(Base):
     #
     __tablename__ = 'StoreBooks'
@@ -72,6 +73,8 @@ class StoreBooks(Base):
     Content = Column(String)
     Tags = Column(String)
     PictureId = Column(String)  # 删除了外键
+
+
 
 
 class BookPictures(Base):

@@ -15,7 +15,7 @@ from logging import Logger
 from logging import FileHandler
 import app.view.auth as auth
 from flask_sqlalchemy import SQLAlchemy
-import flask_whooshalchemy as wa
+# import flask_whooshalchemy as wa
 
 # import app.view.buyer as buyer
 # import app.view.seller as seller
