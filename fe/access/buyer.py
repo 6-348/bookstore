@@ -25,6 +25,7 @@ class Buyer:
         headers = {"token": self.token}
         r = requests.post(url, headers=headers, json=json)
         response_json = r.json()
+
         return r.status_code, response_json.get("order_id")
 
     def payment(self,  order_id: str):

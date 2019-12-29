@@ -8,8 +8,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.exc import IntegrityError, DataError
 import random
-import Global as Global
-from Global import DbURL
+import app.model.Global as Global
+from app.model.Global import DbURL
 
 Base = declarative_base()
 
@@ -65,10 +65,10 @@ class StoreBooks(Base):
     Publisher = Column(String(100))
     OriginalTitle = Column(String(100))
     Translator = Column(String(100))
-    PubYear = Column(String(10))
+    PubYear = Column(String(100))
     Pages = Column(Integer)
     Price = Column(Float(precision=10, decimal_return_scale=2), nullable=False)
-    Binding = Column(String(10))
+    Binding = Column(String(100))
     Isbn = Column(String(100))
     AuthorIntro = Column(String(10000))
     BookIntro = Column(String(10000))
@@ -91,8 +91,8 @@ class BookPictures(Base):
 class Orders(Base):
     __tablename__ = 'Orders'
     OrderId = Column(String(100), Sequence('order_id_seq'), primary_key=True)
-    StoreId = Column(ForeignKey("Stores.StoreId"), nullable=False)
-    UserId = Column(ForeignKey("Users.UserId"), nullable=False)
+    StoreId = Column(String(100), ForeignKey("Stores.StoreId"), nullable=False)
+    UserId = Column(String(100), ForeignKey("Users.UserId"), nullable=False)
     Status = Column(String(50), nullable=False)
     Amount = Column(Integer, nullable=False)
     Deadline = Column(DateTime, nullable=False)
@@ -102,11 +102,15 @@ class OrderBooks(Base):
     __table_args__ = (
         PrimaryKeyConstraint('OrderId', "BookId"),
     )
-    OrderId = Column(String(1000),ForeignKey("Orders.OrderId"))
-    BookId = Column(String(100))
+    OrderId = Column(String(100), ForeignKey("Orders.OrderId"), primary_key=True)
+    BookId = Column(String(100), ForeignKey("StoreBooks.BookId"), primary_key=True)
     Count = Column(Integer, nullable=False)
     
-
+class UserToken(Base):
+    __tablename__ = 'UserToken'
+    UserId = Column(ForeignKey("Users.UserId"),primary_key = True)
+    Token = Column(String(100),nullable = False )
+    DeadTime = Column(DateTime,nullable = False)
 
 if __name__ == '__main__':
     engine = create_engine(Global.DbURL)

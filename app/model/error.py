@@ -21,18 +21,18 @@ error_code = {
     528: "",
 }
 def error_invalid_value(fund):
-    return 525,error_code[525].format(fund)
+    return 525, error_code[525].format(fund)
 def error_repeated_operation(message):
-    return 523,error_code[523].format(message)
+    return 523, error_code[523].format(message)
 
 def error_order_steate_not_right(message ):
-    return 522,error_code[522].format(message)
+    return 522, error_code[522].format(message)
 
 def error_order_can_not_be_cancelled(status):
-    return 521,error_code[521].format(status)
+    return 521, error_code[521].format(status)
 
 def success(message):
-    return 200,error_code[200].format(message)
+    return 200, error_code[200].format(message)
 
 def error_non_exist_user_id(user_id):
     return 511, error_code[511].format(user_id)
@@ -66,10 +66,10 @@ def error_invalid_order_id(order_id):
     return 518, error_code[518].format(order_id)
 
 def error_invalid_store_id(store_id):
-    return 524, error_code[518].format(store_id)
+    return 524, error_code[524].format(store_id)
 
 def error_not_sufficient_funds(order_id):
-    return 519, error_code[518].format(order_id)
+    return 519,  error_code[519].format(order_id)
 
 
 def error_authorization_fail():

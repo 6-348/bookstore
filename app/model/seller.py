@@ -1,6 +1,6 @@
 import app.model.Global as Global
 import json 
-from app.model.create_db import Users,BookPictures,Orders,Stores,UserToken,OrderBooks,StoreBooks,create_session
+from app.model.create_db import Users,BookPictures,Orders,Stores,OrderBooks,StoreBooks,create_session
 from app.model.user import UsersMethod
 import app.model.error as error
 import logging
@@ -90,7 +90,7 @@ class Seller():
             #-----注意插入的时候要考虑，book_info 里面的属性不完全的情况
             book_id = book_info['id']
             logging.debug("book_id: {}".format(book_id))
-            bookline = session.query(StoreBooks).filter(StoreBooks.BookId==book_info["id"]).first()
+            bookline = session.query(StoreBooks).filter(and_(StoreBooks.BookId==book_info["id"],StoreBooks.StoreId==store_id)).first()
             if bookline !=None:
                 logging.debug(bookline)
                 return error.error_exist_book_id(book_info["id"])
@@ -165,7 +165,6 @@ class Seller():
                     session.add(book)
                     session.add(picobj)
             session.commit()
-
         except Exception as e:
             logging.error(e)
             logging.error("app.model.seller.py add_book line 134: {}".format(e))
@@ -179,7 +178,7 @@ class Seller():
      # 添加库存
     def add_stock(self,user_id,store_id,book_id,add_stock_level,token):
         '''
-        @exception token? add_stock_level >0? book_id exist? user_id 和 store_id匹配？book_id 和store_id匹配？
+        @exception token? add_stock_level >0? book_id exist? user_id 和 store_id匹配？
         0. check_token
         1. 检查add_stock_level是否大于0
         2. Stores: 检查store_id是否存在，对应的user_id是否匹配
@@ -187,6 +186,7 @@ class Seller():
         @request: user_id, store_id, book_id, add_stock_level
         :return:
         '''
+        logging.debug("i am add_stock")
         # check token
         code,message = self.user_method.check_token(token, user_id)
         if(code!=200):
@@ -195,16 +195,12 @@ class Seller():
         # add_stock_level >0?
         if add_stock_level<=0:
             return error.error_invalid_value(add_stock_level)
-        
         try: 
             session = create_session(self.engine)
-            bookline = session.query(StoreBooks).filter(StoreBooks.BookId==book_id).first()
+            bookline = session.query(StoreBooks).filter(and_(StoreBooks.BookId==book_id,StoreBooks.StoreId==store_id)).first()
             if bookline==None: # book_id exist?
                 logging.debug("book_id not exist")
                 return error.error_non_exist_book_id(book_id)
-            if bookline.StoreId!=store_id: # book_id 和 store_id 匹配？
-                logging.debug("book_id 和 store_id 不匹配")
-                return error.error_invalid_store_id(store_id)
             storeline = session.query(Stores).filter(Stores.StoreId==store_id).first()
             if storeline.UserId!=user_id: # book_id 和 user_id 不匹配
                 logging.debug("book_id 和 user_id 不匹配")

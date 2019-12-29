@@ -1,7 +1,7 @@
 # order 相关的功能
 import app.model.Global as Global
 import json 
-from app.model.create_db import Users,Orders,UserToken,OrderBooks,StoreBooks,create_session
+from app.model.create_db import Users,Orders,OrderBooks,StoreBooks,create_session
 from app.model.user import UsersMethod
 import app.model.error as error
 import logging
