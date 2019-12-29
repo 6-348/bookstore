@@ -136,21 +136,19 @@ class Buyer:
             return code,message
         try:
             session = create_session(self.engine)
-            line = session.query(Users).filter(Users.UserId==user_id).first()
-            if line.Password==password:
+            line = session.query(Users).filter(Users.UserId==user_id)
+            userline = line[0]
+            if userline.Password!=password:
                 print(140)
                 return error.error_authorization_fail()
-            elif add_value<=0:
-                print(143)
-                return error.error_invalid_value(add_value)
         # 修改数据库
-            line.update({"Balance":line.Balance+add_value})
+            line.update({"Balance": userline.Balance+add_value})
             session.commit()
         except Exception as e:
             logging.error("app.model.Addfund.py line 130{}".format(e))
             session.rollback()
             print(152)
-            return error.error_and_message(110,"commit fail")
+            return error.error_and_message(110, "commit fail")
         finally:
             session.close()
         print(156)
@@ -170,7 +168,7 @@ class Buyer:
         if code!=200:
             return code,message
         try:
-            session = create_engine(self.engine)
+            session = create_session(self.engine)
             line = session.query(Users).filter(Users.UserId==user_id).first()
             if line.Password==password:
                 return error.error_authorization_fail()
@@ -201,7 +199,7 @@ class Buyer:
         if code!=200:
             return code,message
         try:
-            session = create_engine(self.engine)
+            session = create_session(self.engine)
             orderline = session.query(Orders).filter(Orders.OrderId==order_id).first()
             userline = session.query(Users).filter(Users.UserId==user_id).first()
             if orderline == None:
@@ -241,7 +239,7 @@ class Buyer:
         if code!=200:
             return code,message
         try:
-            session = create_engine(self.engine)
+            session = create_session(self.engine)
             userline = session.query(Users).filter(Users.UserId==user_id).first()
             storeline = session.query(Stores).filter(Stores.StoreId==store_id).first()
             if userline.Password==password:

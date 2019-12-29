@@ -42,7 +42,7 @@ def add_funds():
     password: str = request.json.get("password")
     add_value: str = request.json.get("add_value")
     token: str = request.headers.get("token")
-    code, message = buy.add_funds(user_id,password,add_value,token)
+    code, message = buy.add_funds(user_id, password, add_value, token)
     print(code)
     print(message)
     return jsonify({"message": message}), code
