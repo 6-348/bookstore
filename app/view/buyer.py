@@ -19,6 +19,9 @@ def neworder():
     token: str = request.headers.get("token")
     books = request.json.get("books")
     code, message, order_id = buy.neworder(user_id,store_id,books,token)
+    print(code)
+    print(message)
+    print(order_id)
     return jsonify({"message": message, "order_id": order_id}), code
 
 
@@ -33,13 +36,15 @@ def payment():
     return jsonify({"message": message}), code
 
 
-@bp_buyer.route("/topup", methods=["POST"])  # 充值
+@bp_buyer.route("/add_funds", methods=["POST"])  # 充值
 def add_funds():
     user_id: str = request.json.get("user_id")
     password: str = request.json.get("password")
     add_value: str = request.json.get("add_value")
     token: str = request.headers.get("token")
-    code,message = buy.add_funds(user_id,password,add_value,token)
+    code, message = buy.add_funds(user_id,password,add_value,token)
+    print(code)
+    print(message)
     return jsonify({"message": message}), code
 
 

@@ -24,7 +24,7 @@ class Buyer:
     def neworder(self,user_id,store_id,books,token):
         '''
         @params: user_id,store_id,books = [{"id": id_count_pair[0], "count": id_count_pair[1]},]
-        @exceptions: password 错误,token错误，store_id 不存在，书不存在，库存不足，重复下单
+        @exceptions: token错误，store_id 不存在，书不存在，库存不足，重复下单,user_id 不存在
         操作：（45是一个事务）
         4. 减少库存
         5. Order, OrderBooks表格中新建项(新建order的时间是"当前时间+timeout时间期限"
@@ -34,57 +34,54 @@ class Buyer:
         order_id =store_id+user_id+timestr+str(np.random.randint(0, 100)) # order_id 的生成
         code,message = self.user_method.check_token(token, user_id)
         if code!=200:
-            logging.debug(message)
-            print("38")
+            logging.debug("{}:{}".format(code, message))
             return code,message,order_id
         try:
             session = create_session(self.engine)
             line = session.query(Stores).filter(Stores.StoreId==store_id).first()
             if line==None:
-                code, meassge = error.error_invalid_store_id(store_id), order_id
-                print("44")
-                logging.debug(message)
+                code, meassge = error.error_invalid_store_id(store_id)
+                logging.debug("{}:{}".format(code, message))
                 return code, message, order_id
-            if line.UserId != user_id:
-                code, meassge = error.error_invalid_store_id(store_id), order_id
-                print("48")
-                logging.debug(message)
+            userline = session.query(Users).filter(Users.UserId==user_id).first()
+            if userline ==None:
+                code, meassge = error.error_non_exist_user_id(user_id)
+                logging.debug("{}:{}".format(code, message))
                 return code, message, order_id
             Amount = 0
-            logging.debug("52")
             for book in books:
                 book_id = book["id"]
                 count = book["count"]
                 bookline = session.query(StoreBooks).filter(and_(StoreBooks.BookId==book_id,StoreBooks.StoreId == store_id)).first()
                 if bookline==None:
-                    code, meassge = error.error_non_exist_book_id(book_id),order_id
-                    logging.debug(message)
+                    code, meassge = error.error_non_exist_book_id(book_id)
+                    logging.debug("{}:{}", code, message)
                     return code, message, order_id
                 elif bookline.Stock < count:
                     code, meassge =error.error_non_exist_book_id(book_id)
-                    logging.debug(message)
+                    logging.debug("{}:{}", code, message)
                     return code, message, order_id
                 else:
                     Amount+=bookline.Price * count 
             #修改数据库 Orders 增加一条， OrderBooks，每个BookId 增加一条
             order = Orders(OrderId= order_id, StoreId =store_id,UserId = user_id,Status = "1", Amount= Amount,Deadline = datetime.now()+Global.order_timeout_delta)
             session.add(order)
+            session.commit()
             logging.debug("63")
             for book in books:
                 book_id = book["id"]
                 count = book["count"]
-                orderbook = OrderBooks(OrderId=order_id,BookId = book_id,Count=count)
+                orderbook = OrderBooks(OrderId=order_id, BookId = book_id, Count=count)
                 session.add(orderbook)
             session.commit()
         except Exception as e:
-            logging.error("app.model.buy.py line 64"+ e)
+            logging.error("app.model.buy.py line 64 {}".format(e))
             session.rollback()
-            logging.debug(message)
             return error.error_and_message(100, "commit fail"), order_id
         finally:
             session.close()
         code,meassge = error.success("neworder")
-        logging.debug(message)
+        logging.debug("{}:{}".format(code, message))
         return code, message, order_id
 
 
@@ -118,7 +115,7 @@ class Buyer:
                 session.update({"Balance":userline.Balance})
                 session.commit()
         except Exception as e:
-            logging.error("app.model.Payment.py line 101"+e)
+            logging.error("app.model.Payment.py line 101 {}".format(e))
             session.rollback()
         finally:
             session.close()
@@ -135,22 +132,28 @@ class Buyer:
         logging.debug("topup has run")
         code,message = self.user_method.check_token(token, user_id)
         if code!=200:
+            print(135)
             return code,message
         try:
-            session = create_engine(self.engine)
+            session = create_session(self.engine)
             line = session.query(Users).filter(Users.UserId==user_id).first()
             if line.Password==password:
+                print(140)
                 return error.error_authorization_fail()
             elif add_value<=0:
+                print(143)
                 return error.error_invalid_value(add_value)
         # 修改数据库
             line.update({"Balance":line.Balance+add_value})
             session.commit()
         except Exception as e:
-            logging.error("app.model.Addfund.py line 130"+e)
+            logging.error("app.model.Addfund.py line 130{}".format(e))
             session.rollback()
+            print(152)
+            return error.error_and_message(110,"commit fail")
         finally:
             session.close()
+        print(156)
         return error.success("Addfund")
 
 
@@ -179,7 +182,7 @@ class Buyer:
             line.update({"Balance":line.Balance-money})
             session.commit()
         except Exception as e:
-            logging.error("app.model.withdraw.py line 161"+e)
+            logging.error("app.model.withdraw.py line 161 {}".format(e))
             session.rollback()
         finally:
             session.close()       
@@ -216,7 +219,7 @@ class Buyer:
             orderline.update({"Status":"4"})
             session.commit()
         except Exception as e:
-            logging.error("app.model.comfirm_receiption.py line 197"+e)
+            logging.error("app.model.comfirm_receiption.py line 197 {}".format(e))
             session.rollback()
         finally:
             session.close()       
@@ -254,7 +257,7 @@ class Buyer:
             userline.update({"Balance":userline.Balance-amount})
             session.commit()
         except Exception as e:
-            logging.error("app.model.transfer_to_user.py line 243"+e)
+            logging.error("app.model.transfer_to_user.py line 243 {}".format(e))
             session.rollback()
         finally:
             session.close()             
