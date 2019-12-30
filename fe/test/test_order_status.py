@@ -12,7 +12,8 @@ class TestOrderStatus:
     seller_id: str
     store_id: str
     buyer_id: str
-    password:str
+    seller_password:str
+    buyer_password:str
     buy_book_info_list: [Book]
     total_price: int
     order_id: str
@@ -27,7 +28,8 @@ class TestOrderStatus:
         self.store_id = "test_payment_store_id_{}".format(str(uuid.uuid1()))
         self.buyer_id = "test_payment_buyer_id_{}".format(str(uuid.uuid1()))
         self.terminal = "terminal_" + self.buyer_id
-        self.password = self.seller_id
+        self.buyer_password = self.buyer_id
+        self.seller_password = self.seller_id
         self.auth = Auth(conf.URL)
         self.order = Order(conf.URL)
 
@@ -35,9 +37,9 @@ class TestOrderStatus:
         ok, buy_book_id_list = gen_book.gen(non_exist_book_id=False, low_stock_level=False, max_book_count=5)
         self.buy_book_info_list = gen_book.buy_book_info_list
         assert ok
-        b = register_new_buyer(self.buyer_id, self.password)
+        b = register_new_buyer(self.buyer_id, self.buyer_password)
         self.buyer = b
-        code, self.token = self.auth.login(self.buyer_id, self.password, self.terminal)
+        code, self.token = self.auth.login(self.buyer_id, self.buyer_password, self.terminal)
         assert code ==200
         code, self.order_id = b.new_order(self.store_id, buy_book_id_list)
         assert code == 200
@@ -55,6 +57,7 @@ class TestOrderStatus:
     def test_orderid_not_exist(self):
         order_id = self.order_id+"aaa"
         code = self.order.order_status(self.buyer_id,order_id,self.token)
+        assert code ==511
         
     
 

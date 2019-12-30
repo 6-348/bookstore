@@ -32,7 +32,7 @@ class TestLogin:
 
     def test_error_user_id(self):
         code, token = self.auth.login(self.user_id + "_x", self.password, self.terminal)
-        assert code == 401
+        assert code == 511
 
     def test_error_password(self):
         code, token = self.auth.login(self.user_id, self.password + "_x", self.terminal)
