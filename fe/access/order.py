@@ -9,7 +9,7 @@ class Order:
         self.url_prefix = urljoin(url_prefix, "order/")
 
     def user_cancel_order(self, user_id,order_id,token): # 取消订单
-        json = {"user_id":user_id, "order_id":order_id}
+        json = {"user_id": user_id, "order_id": order_id}
         url = urljoin(self.url_prefix, "user_cancel_order")
         headers = {"token": token}
         r = requests.post(url, headers = headers, json = json)

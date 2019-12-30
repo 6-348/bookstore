@@ -6,9 +6,11 @@ from fe.access.new_buyer import register_new_buyer
 from fe.access.new_seller import register_new_seller
 from fe.access.book import Book
 from fe.access.seller import Seller
+from fe.access.order import Order
 import uuid
+from fe import conf
 
-
+from fe.access.auth import Auth
 class TestDeliveryBooks:
     seller_id: str
     store_id: str
@@ -26,7 +28,9 @@ class TestDeliveryBooks:
         self.store_id = "test_payment_store_id_{}".format(str(uuid.uuid1()))
         self.buyer_id = "test_payment_buyer_id_{}".format(str(uuid.uuid1()))
         self.buyer_password = self.seller_id
+
         gen_book = GenBook(self.seller_id, self.store_id)# 在这个函数里面 seller 已经注册了
+
         ok, buy_book_id_list = gen_book.gen(non_exist_book_id=False, low_stock_level=False, max_book_count=5)
         self.buy_book_info_list = gen_book.buy_book_info_list
         assert ok
@@ -43,8 +47,6 @@ class TestDeliveryBooks:
             self.total_price = self.total_price + book.price * num
         code = self.buyer.add_funds(self.total_price)
         assert code ==200
-        # code = self.buyer.payment(self.order_id)
-        # assert code ==200
         yield
 
     def test_ok(self):
@@ -67,6 +69,14 @@ class TestDeliveryBooks:
         assert code ==200
         order_id = self.order_id + "[[dkdkdk]]"
         code = self.seller.delivery_books(self.seller_id,order_id)
+        assert code != 200
+    def test_failed_order(self): # 已经取消的订单不能发货
+        self.terminal = "terminal_" +  self.buyer_id
+        code, token = Auth(conf.URL).login(self.buyer_id, self.buyer_password, self.terminal)
+        assert code == 200
+        code  = Order(conf.URL).user_cancel_order(self.buyer_id, self.order_id, token)
+        assert code == 200
+        code = self.seller.delivery_books(self.seller_id, self.order_id)
         assert code != 200
     def test_not_right_state(self): # 已完成订单不能发货
         code = self.buyer.payment(self.order_id)

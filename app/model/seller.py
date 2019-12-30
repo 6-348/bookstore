@@ -1,5 +1,6 @@
 import app.model.Global as Global
-import json 
+import json
+import uuid
 from app.model.create_db import Users,BookPictures,Orders,Stores,OrderBooks,StoreBooks,create_session
 from app.model.user import UsersMethod
 import app.model.error as error
@@ -29,7 +30,7 @@ def save_img(picture:bytes,picture_address):
 # print(to_dict(a,[]))
 class Seller():
     def __init__(self):
-        self.engine = create_engine(Global.DbURL)
+        self.engine = create_engine(Global.DbURL,pool_size=20, max_overflow=0)
         self.user_method = UsersMethod()
 
     # 创建商铺
@@ -40,21 +41,23 @@ class Seller():
         3. stores创建新的一行
         '''
         code,message = self.user_method.check_token(token, user_id)
-        if code!=200:
-            logging.debug("stop in check_token")
+        if code != 200:
+            logging.debug(" create_store stop in check_token -----------------------------------------------------------------------------------------------------------")
             return code,message
         try:
+            logging.debug(" create_store try -----------------------------------------------------------------------------------------------------------")
             session = create_session(self.engine)
-            storeline = Stores(StoreId=store_id,UserId=user_id,Balance=0)
+            storeline = Stores(StoreId=store_id, UserId=user_id, Balance=0)
             session.add(storeline)
             session.commit()
         except Exception as e:
+            logging.debug(" create_store except -----------------------------------------------------------------------------------------------------------")
             logging.error("app.model.seller.py create_store line 31: {}".format(e))
             session.rollback()
             return error.error_exist_store_id(store_id)
         finally:
             session.close()
-        logging.debug("create store successfully")
+        logging.debug("create store successfully-------------------------------------------------------------------------------------------------")
         return error.success("create_stores")
 
     # 添加书籍信息
@@ -76,23 +79,25 @@ class Seller():
         logging.debug("add_book has run")
         code,message = self.user_method.check_token(token, user_id)
         if code!=200:
-            logging.debug("stop in check_token")
-            return code,message
+            logging.debug("add_book stop in check_token-----------------------------------------------------------------------------------------------------------")
+            return code, message
         try:
             session = create_session(self.engine)
-            storeline = session.query(Stores).filter(Stores.StoreId==store_id).first()
+            storeline = session.query(Stores).filter(Stores.StoreId == store_id).first()
             logging.debug("store_id"+store_id)
-            if storeline ==None:
+            if storeline == None: #  store_id 不存在
+                logging.debug("add_book store not exist -----------------------------------------------------------------------------------------------------------")
                 return error.error_non_exist_store_id(store_id)
-            if storeline.UserId !=user_id:
-                return error.error_exist_user_id(user_id)# uer_id 和store_id不匹配
+            if storeline.UserId != user_id: #store_id 和 user_id 不匹配
+                logging.debug("add_book error_exist_user_id( -----------------------------------------------------------------------------------------------------------")
+                return error.error_exist_user_id(user_id)
+            # uer_id 和store_id不匹配
             # 插入bookline 如果两种情况不成功，1. 部分信息的nullable 不满足；2. BookId 已经存在
             #-----注意插入的时候要考虑，book_info 里面的属性不完全的情况
             book_id = book_info['id']
             logging.debug("book_id: {}".format(book_id))
             bookline = session.query(StoreBooks).filter(and_(StoreBooks.BookId==book_info["id"],StoreBooks.StoreId==store_id)).first()
-            if bookline !=None:
-                logging.debug(bookline)
+            if bookline != None: # bookid 已经存在
                 return error.error_exist_book_id(book_info["id"])
             # 修改数据库：            
                 # tags
@@ -102,7 +107,7 @@ class Seller():
             else:
                 Tags = ""
                 for tag in book_info['tags']:
-                    Tags+=tag+","
+                    Tags += tag+","
                 # pictures:BookPictures
             picture_id_list = []
             picobj_list = []
@@ -115,10 +120,9 @@ class Seller():
                 for picture in book_info["pictures"]:
                     difcode+=1
                     timestr = datetime.now().strftime('%a-%b-%d-%H-%M-%S.%f')
-                    picturename = store_id+book_id+timestr+str(difcode)+ str(np.random.randint(0,100))+".png"
-
+                    picturename = str(uuid.uuid1())+str(np.random.randint(0,1000))+".png"
                     picture_address = Global.PicturePath+picturename
-                    # save_img(picture,picture_address)
+                    # save_img(picture, picture_address)
                     logging.debug("picture_address:{}"+picture_address)
                     picture_id = picturename
                     logging.debug("pcitre_id----------->{}".format(picture_id))
@@ -165,12 +169,14 @@ class Seller():
                     session.add(book)
                     session.add(picobj)
             session.commit()
+            logging.debug(
+                "add_book success( -----------------------------------------------------------------------------------------------------------")
+
         except Exception as e:
-            logging.error(e)
             logging.error("app.model.seller.py add_book line 134: {}".format(e))
             session.rollback()
             # logging.error("invalid book info{}".format(book_info))
-            return error.error_and_message(530,"invalid book info")
+            return error.error_and_message(530, "invalid book info")
         finally:
             session.close()
         logging.debug("add book successfully")
@@ -240,9 +246,7 @@ class Seller():
             if order.Status=='4':
                 return error.error_order_steate_not_right("finished order")
             # 修改订单状态：
-            orderline.update(
-                {Orders.Status: "3"}
-            )
+            orderline.update({Orders.Status: "3"})
             session.commit()
             print(error.success("Dlivery books"))
             return error.success("Dlivery books")

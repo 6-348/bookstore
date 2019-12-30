@@ -18,7 +18,6 @@ class TestAddBook:
         assert code == 200
         book_db = book.BookDB()
         self.books = book_db.get_book_info(0, 2)
-
         yield
         # do after test
 
@@ -26,12 +25,17 @@ class TestAddBook:
         for b in self.books:
             code = self.seller.add_book(self.store_id, 0, b)
             assert code == 200
+    def test_error_invalid_bookinfo(self):
+        for b in self.books:
+            delattr(b, "price") # 从属性b 中删除price 属性
+            code = self.seller.add_book(self.store_id , 0, b)
+            assert code == 530
 
     def test_error_non_exist_store_id(self):
         for b in self.books:
             # non exist store id
             code = self.seller.add_book(self.store_id + "x", 0, b)
-            assert code != 200
+            assert code == 513
 
     def test_error_exist_book_id(self):
         for b in self.books:

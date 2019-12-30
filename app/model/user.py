@@ -13,7 +13,7 @@ import app.model.error as error
 
 class UsersMethod():
     def __init__(self):
-        self.engine = create_engine(DbURL)
+        self.engine = create_engine(DbURL,pool_size=20, max_overflow=0)
 
     def _encode_token(self, user_id: str, terminal: str):
         """

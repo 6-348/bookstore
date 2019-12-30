@@ -72,7 +72,9 @@ def user_cancel_order():
     user_id: str = request.json.get("user_id")
     order_id: str = request.json.get("order_id")
     token: str = request.headers.get("token")
-    code,message = order.user_cancel_order(user_id,order_id,token)
+    code,message = order.user_cancel_order(user_id, order_id, token)
+    logging.debug(code)
+    logging.debug(message)
     return jsonify({"message": message}), code
 
 

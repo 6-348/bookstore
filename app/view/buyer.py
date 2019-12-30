@@ -60,7 +60,7 @@ def withdraw():
 
 
 @bp_buyer.route("/confirm_reception", methods=["POST"])  # 确认收货
-def comfirm_receiption():
+def confirm_reception():
     logging.debug("confirm_reception has run")
     order_id: str = request.json.get("order_id")
     user_id: str = request.json.get("user_id")

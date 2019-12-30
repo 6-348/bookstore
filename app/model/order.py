@@ -52,7 +52,7 @@ class Order():
             for i in range(len(dic_list)):
                 for key in keys:
                     dic2[key+str(i)] = dic_list[i][key]
-            dic_sum = dict(**dic,**dic2) # 合并字典
+            dic_sum = dict(**dic, **dic2) # 合并字典
             logging.debug("dic_sum: " + message)
             # message = json.dumps(dic_sum)
             return code,dic_sum
@@ -103,40 +103,41 @@ class Order():
         @request: order_id, user_id,token
         :return:
         '''
-        code, message = self.user_method .check_token(user_id,token)
+        code, message = self.user_method .check_token(token, user_id)
         if code != 200:
             return code, message
-        session = create_session(self.engine)
-        lines = session.query(Orders).filter(and_(Orders.OrderId==order_id))
-        line = lines[0]
-        if line == None:
-            return error.error_invalid_order_id(order_id)
-        if line.UserId != user_id:
-            return error.error_non_exist_user_id(user_id)
-        if line.Status != "1":
-            return error.error_order_can_not_be_cancelled(line.Status)
-        
-        # 修改Orders
-        lines.update("")
-        session.execute(
-                update(Orders).where(Orders.OrderId == order_id).values(
-                {Orders.Status: "5"}))
-        # Orders.Status = "5"
-        logging.error("please examine here ------------------user_cancle_order")
+        try:
+            session = create_session(self.engine)
+            lines = session.query(Orders).filter(and_(Orders.OrderId==order_id))
+            line = lines[0]
+            if line == None:
+                print(113)
+                return error.error_invalid_order_id(order_id)
+            if line.UserId != user_id:
+                print(116)
+                return error.error_non_exist_user_id(user_id)
+            if line.Status != "1":
+                print(119)
+                return error.error_order_can_not_be_cancelled(line.Status)
+            # 修改Orders
+            lines.update({Orders.Status: "5"})
+            # 修改StoreBooks:
+            store_id = line.StoreId
+            booklist = session.query(StoreBooks, OrderBooks).filter(and_(StoreBooks.StoreId==store_id,StoreBooks.BookId == OrderBooks.BookId)).all()
+            for book in booklist:
+                book.StoreBooks.Stock += book.OrderBooks.Count
+                session.execute(
+                    update(StoreBooks).where(StoreBooks.BookId == book.OrderBooks.BookId).values(
+                    {StoreBooks.Stock: book.StoreBooks.Stock}))
+            session.commit()
+        except Exception as e:
+            logging.debug(e)
+            return error.error_and_message("110", "commit fail")
+        finally:
+            session.close()
+        logging.debug(113)
+        return error.success("cancel order")
 
-        # 修改StoreBooks:
-        store_id = line.StoreId
-        booklist = session.query(StoreBooks,OrderBooks).filter(and_(StoreBooks.StoreId==store_id,StoreBooks.BookId == OrderBooks.BookId)).all()
-        for book in booklist:
-            book.StoreBooks.Stock += book.OrderBooks.Count
-            session.execute(
-                update(StoreBooks).where(StoreBooks.BookId == book.OrderBooks.BookId).values(
-                { StoreBooks.Stock: book.StoreBooks.Stock}))
-            # 可以这么玩吗》
-            logging.error("please examine here ------------------user_cancle_order")
-        session.commit()
-        session.close()
-        return error.success("cancle order")
     def auto_cancel_order(self):
         '''
         筛选所有的订单状态为1 且 时间>=deadtime 的orderid,然乎执行取消操作
