@@ -1,4 +1,4 @@
-import pytest
+mport pytest
 
 from fe.test.gen_book_data import GenBook
 from fe.access.new_buyer import register_new_buyer
