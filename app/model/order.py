@@ -100,9 +100,9 @@ class Order():
         @request: order_id, user_id,token
         :return:
         '''
-        code,message = self.user_method .check_token(user_id,token)
-        if code!=200 :
-            return code,message
+        code, message = self.user_method .check_token(user_id,token)
+        if code != 200:
+            return code, message
         session = create_session(self.engine)
         lines = session.query(Orders).filter(and_(Orders.OrderId==order_id))
         line = lines[0]
@@ -110,10 +110,11 @@ class Order():
             return error.error_invalid_order_id(order_id)
         if line.UserId != user_id:
             return error.error_non_exist_user_id(user_id)
-        if line.Status !="1":
+        if line.Status != "1":
             return error.error_order_can_not_be_cancelled(line.Status)
         
-        # 修改Orders 
+        # 修改Orders
+        lines.update("")
         session.execute(
                 update(Orders).where(Orders.OrderId == order_id).values(
                 {Orders.Status: "5"}))
