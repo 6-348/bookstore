@@ -39,8 +39,8 @@ class TestOrderStatus:
         assert ok
         b = register_new_buyer(self.buyer_id, self.buyer_password)
         self.buyer = b
-        # code, self.token = self.auth.login(self.buyer_id, self.buyer_password, self.terminal)
-        # assert code ==200
+        code, self.token = self.auth.login(self.buyer_id, self.buyer_password, self.terminal)
+        assert code ==200
         code, self.order_id = b.new_order(self.store_id, buy_book_id_list)
         assert code == 200
         yield
