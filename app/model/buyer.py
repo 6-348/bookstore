@@ -81,7 +81,7 @@ class Buyer:
         finally:
             session.close()
         code,meassge = error.success("neworder")
-        logging.debug("{}:{}".format(code, message))
+        logging.debug(message)
         return code, message, order_id
 
 
@@ -207,6 +207,7 @@ class Buyer:
         logging.debug("withdraw has run")
         code,message = self.user_method.check_token(token, user_id)
         if code!=200:
+            print(210)
             return code, message
         try:
             session = create_session(self.engine)
@@ -215,20 +216,28 @@ class Buyer:
             userline = userlines[0]
             orderline = orderlines[0]
             if orderlines == None:
+                print(218)
                 return error.error_invalid_order_id(order_id)
-            if orderline.UserId != order_id:
+            if orderline.Status!="3":
+                print(222)
+                return error.error_order_steate_not_right(orderline.Status)
+            if orderline.UserId != user_id:
+                print(220)
                 return error.error_invalid_order_id(order_id)
-            if userlines==None:
+            if userlines == None:
+                print(224)
                 return error.error_exist_user_id(user_id)
-            if userline.Password==password:
+            if userline.Password!=password:
+                print(228)
                 return error.error_authorization_fail()
             store_id = orderline.StoreId
-            storelines = session.query(Stores).filter(Stores.StoreId==store_id)
+            storelines = session.query(Stores).filter(Stores.StoreId == store_id)
             storeline = storelines[0]
              # 修改数据库
             storelines.update({"Balance": storeline.Balance+orderline.Amount})
             orderlines.update({"Status": "4"})
             session.commit()
+            logging.debug("confirm reception successfully ")
             return error.success("confirm_reception")
         except Exception as e:
             logging.error("app.model.confirm_reception.py line 197 {}".format(e))

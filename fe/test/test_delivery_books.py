@@ -73,7 +73,7 @@ class TestDeliveryBooks:
         assert code ==200
         code = self.seller.delivery_books(self.seller_id,self.order_id)
         assert code == 200
-        code = self.buyer.comfirm_reception(self.buyer_id,self.order_id,self.password)
+        code = self.buyer.confirm_reception(self.buyer_id,self.order_id, self.buyer_password)
         assert code == 200
         code = self.seller.delivery_books(self.seller_id,self.order_id)
         assert code != 200

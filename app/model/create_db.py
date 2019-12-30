@@ -102,7 +102,7 @@ class OrderBooks(Base):
     __table_args__ = (
         PrimaryKeyConstraint('OrderId', "BookId"),
     )
-    OrderId = Column(String(1000),ForeignKey("Orders.OrderId"))
+    OrderId = Column(String(1000), ForeignKey("Orders.OrderId"))
     BookId = Column(String(100))
     Count = Column(Integer, nullable=False)
     
