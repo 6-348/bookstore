@@ -39,18 +39,8 @@ class TestConfirm:
         ok, buy_book_id_list = gen_book.gen(non_exist_book_id=False, low_stock_level=False, max_book_count=5)
         self.buy_book_info_list = gen_book.buy_book_info_list
         assert ok
-<<<<<<< HEAD
         # 下单
         code, self.order_id = self.buyer.new_order(self.store_id, buy_book_id_list)
-=======
-        b = register_new_buyer(self.buyer_id, self.buyer_password)
-        s = register_new_seller(self.seller_id, self.seller_password)
-        self.buyer = b
-        self.seller = s
-        code, self.token = self.auth.login(self.buyer_id, self.buyer_password, self.terminal)
-        assert code == 200
-        code, self.order_id = b.new_order(self.store_id, buy_book_id_list)
->>>>>>> 3cbda147243aad6cc52745e6f48a541f8facbf90
         assert code == 200
         # 金额要用到的地方：充值后才能付款
         self.total_price = 0

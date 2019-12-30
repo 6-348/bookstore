@@ -20,11 +20,7 @@ def to_dict(result:object,dropwords:list)->dict:
 class Order():
     def __init__(self):
         self.engine = create_engine(Global.DbURL)
-<<<<<<< HEAD
         self.user_method = UsersMethod()
-=======
-        self.user_method= UsersMethod()
->>>>>>> 3cbda147243aad6cc52745e6f48a541f8facbf90
     def order_status(self,user_id:str,order_id:str,token:str)-> (str,str):
             '''
             0. check_token
@@ -40,27 +36,17 @@ class Order():
                 return code,message
             # check order exist 
             session = create_session(self.engine)
-<<<<<<< HEAD
-            line  = session.query(Orders).filter(Orders.OrderId == order_id).first()
-=======
             line  = session.query(Orders).filter(Orders.OrderId==order_id).first()
             # userline = session.query(Users).filter(Users.UserId==user_id).first()
->>>>>>> 3cbda147243aad6cc52745e6f48a541f8facbf90
             session.close()
             if line == None:
                 logging.error(error.error_invalid_order_id(order_id))
                 return error.error_invalid_order_id(order_id)
             # order 存在， 查询OrderBooks
-<<<<<<< HEAD
-            dic = to_dict(line, ['metadata'])
-            line2 = session.query(OrderBooks).filter(Orders.OrderId==order_id).all()
-            dic_list = line2.apply(lambda x: to_dict(x, ["OrderId", 'metadata']))
-=======
             dic = to_dict(line,["metadata"])
             line2 = session.query(OrderBooks).filter(Orders.OrderId==order_id).all()
             dic_list = [to_dict(x,["OrderId", "metadata"]) for x in line2]
                 # line2.apply(lambda x: to_dict(x,["OrderId","metadata"]))
->>>>>>> 3cbda147243aad6cc52745e6f48a541f8facbf90
             keys = list(dic_list[0].keys())
             dic2 = dict()
             for i in range(len(dic_list)):
@@ -77,18 +63,12 @@ class Order():
         1. 找出所有订单
         2. 返回
         """
-<<<<<<< HEAD
         code, message = self.user_method.check_token(token, user_id)
         print(token)
         print(user_id)
         if code != 200:
             print(65)
             return code, message, None
-=======
-        code,message = self.user_method.check_token(token,user_id)
-        if(code!=200):
-            return code,message
->>>>>>> 3cbda147243aad6cc52745e6f48a541f8facbf90
         session = create_session(self.engine)
         lines = session.query(Orders,  OrderBooks).filter(and_(Orders.UserId == user_id,Orders.OrderId == OrderBooks.OrderId)).all()
         session.close()
@@ -123,15 +103,9 @@ class Order():
         @request: order_id, user_id,token
         :return:
         '''
-<<<<<<< HEAD
         code, message = self.user_method .check_token(user_id,token)
         if code != 200:
             return code, message
-=======
-        code,message = self.user_method.check_token(token,user_id)
-        if(code!=200):
-            return code,message
->>>>>>> 3cbda147243aad6cc52745e6f48a541f8facbf90
         session = create_session(self.engine)
         lines = session.query(Orders).filter(and_(Orders.OrderId==order_id))
         line = lines[0]
