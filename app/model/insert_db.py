@@ -3,12 +3,14 @@ import sqlite3 as sqlite
 import random
 import base64
 import simplejson as json
+import logging
 
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Float, DateTime, create_engine, \
     PrimaryKeyConstraint, desc, \
     Sequence
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.exc import DatabaseError
 from app.model.Global import DbURL
 from app.model.create_db import create_session, StoreBooks, Stores, BookPictures, Users
 
@@ -106,7 +108,7 @@ class BookDB:
 
 if __name__ == '__main__':
     b = BookDB(False)
-    books = b.get_book_info(0, b.get_book_count()d)
+    books = b.get_book_info(0, b.get_book_count())
 
     engine = create_engine(DbURL)
     session = create_session(engine)
@@ -152,3 +154,14 @@ for i in range(0, b.get_book_count()):
         session.add(BookPicture)
         session.commit()
 
+
+
+
+
+'''
+原始建立索引的指令
+-- ALTER TABLE "StoreBooks" add column ts_search tsvector;
+-- UPDATE "StoreBooks" SET ts_search =
+-- to_tsvector('zhparser', coalesce("Tags",'') || ' ' || coalesce("Title",'') || coalesce("Content",'') || coalesce("BookIntro",''));
+-- CREATE INDEX idx_ts_seach ON "StoreBooks" USING gin(ts_search);
+SELECT * FROM "StoreBooks" WHERE ts_search @@ to_tsquery('金庸');'''

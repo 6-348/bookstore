@@ -1,8 +1,11 @@
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Float, DateTime, create_engine, \
     PrimaryKeyConstraint, desc, \
-    Sequence
+    Sequence, Index
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.expression import text, cast
+from sqlalchemy.sql.functions import func
+
 from app.model.Global import DbURL
 
 Base = declarative_base()
@@ -47,12 +50,12 @@ class Stores(Base):
     Balance = Column(Float(precision=10, decimal_return_scale=2))
 
 
-
 class StoreBooks(Base):
-    #
     __tablename__ = 'StoreBooks'
+
     __table_args__ = (
         PrimaryKeyConstraint('BookId'),
+
     )
     StoreId = Column(String(100), ForeignKey("Stores.StoreId"))
     Stock = Column(Integer)
@@ -73,8 +76,6 @@ class StoreBooks(Base):
     Content = Column(String)
     Tags = Column(String)
     PictureId = Column(String)  # 删除了外键
-
-
 
 
 class BookPictures(Base):
@@ -114,5 +115,5 @@ if __name__ == '__main__':
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
     Base.metadata.create_all(engine)  # 创建所有表格
-    # insert_batch(session)
+
     session.close()

@@ -1,43 +1,30 @@
-# dailin：用来测试一些代码
-# 这是没有任何用的文件
+import os
+import sqlite3 as sqlite
+import random
+import base64
+import simplejson as json
+import logging
 
-import datetime
-import time
-import jwt
-
-
-def _encode_token(user_id: str, terminal: str):
-    """
-    生成认证Token
-    :param user_id: 数据库中的if
-    :param terminal: terminal_{登陆时间}
-    :return: string
-    """
-    try:
-        payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, seconds=1),  # 过期时间
-            'iat': datetime.datetime.utcnow(),  # 签发时间
-            'iss': 'ken',  # 签发人
-            'data': {
-                'id': user_id,
-                'terminal': terminal
-            }
-        }
-        return jwt.encode(
-            payload,
-            "1213123123",
-            algorithm='HS256'
-        ).decode("utf-8")
-    except Exception as e:
-        return e
-
+from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Float, DateTime, create_engine, \
+    PrimaryKeyConstraint, desc, \
+    Sequence
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.exc import DatabaseError
+from app.model.Global import DbURL
+from app.model.create_db import create_session, StoreBooks, Stores, BookPictures, Users
 
 if __name__ == '__main__':
-    token = _encode_token("dailin", "123")
-    time.sleep(3)
-    token1 = jwt.decode(token, "1213123123", options={'verify_exp': False})
-    # token1 = jwt.decode(token, "1213123123", leeway = datetime.timedelta(seconds=0))
-    print(token)
+    engine = create_engine(DbURL)
+    session = create_session(engine)
+    keyword = '金庸'
+    store_id = 'fortest'
+    sql_str = "SELECT \"BookId\",\"Title\" FROM \"StoreBooks\" WHERE ts_search @@ to_tsquery('%s') AND \"StoreId\"='%s'" % (
+    keyword, store_id)
 
-    print()
-    print(token1)
+    result = session.execute(sql_str)
+
+    print(result.fetchall()[0])
+
+    session.commit()
+

@@ -13,20 +13,23 @@ bp_search = Blueprint("search", __name__, url_prefix="/search")
 
 s = SearchMethod()
 
-# 题目确切查询：直接给出"本店/全站"
+'''
+默认关键字搜索 题目+标签+目录+内容
+指定后也可以搜索 作者
+搜索结果比较大的时候分页展示
+'''
 
 # 本店模糊查询
 @bp_search.route("/store", methods=['POST'])
 def search_store():
     keyword = request.json['keyword']
     store_id = request.json['store_id']
-
-    token = "return from function"
-    return jsonify({"message": message, "token": token}), code
+    message, book_list = s.search_store(store_id, keyword)
+    return jsonify({"message": message, "book": book_list})
 
 # 全站模糊查询
 @bp_search.route("/all", methods=['POST'])
 def search_all():
     keyword = request.json['keyword']
-
-    return jsonify({"message": message, "token": token}), code
+    message, book_list = s.search_all(keyword)
+    return jsonify({"message": message, "book": book_list})
