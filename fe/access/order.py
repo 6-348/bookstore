@@ -13,18 +13,18 @@ class Order:
         url = urljoin(self.url_prefix,"user_cancel_order")
         headers = {"token":token}
         r = requests.post(url,headers = headers,json = json)
-        return r.satus_code 
+        return r.status_code
     def order_status(self,user_id:str,order_id:str,token): # 根据订单号，查看单个订单
         json = {"user_id":user_id,"order_id":order_id}
         url = urljoin(self.url_prefix,"order_status")
         headers = {"token":token}
         r = requests.post(url,headers = headers,json = json)
-        return r.satus_code
+        return r.status_code
     def my_orders(self,user_id,token): # 查看我的所有订单
         json = {"user_id":user_id}
         url = urljoin(self.url_prefix,"my_orders")
         headers = {"headers":token}
         r = requests.post(url,headers = headers,json = json)
-        return r.satus_code
+        return r.status_code
 
     

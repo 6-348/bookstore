@@ -39,8 +39,9 @@ class TestOrderStatus:
         assert ok
         b = register_new_buyer(self.buyer_id, self.buyer_password)
         self.buyer = b
-        code, self.token = self.auth.login(self.buyer_id, self.buyer_password, self.terminal)
-        assert code ==200
+        # code, self.token = self.auth.login(self.buyer_id, self.buyer_password, self.terminal)
+        # assert code ==200
+        self.token = b.token
         code, self.order_id = b.new_order(self.store_id, buy_book_id_list)
         assert code == 200
         yield
@@ -49,15 +50,16 @@ class TestOrderStatus:
         code = self.order.order_status(self.buyer_id,self.order_id,self.token)
         assert code == 200
 
-    def test_authorization_error(self): # 授权失败，token 
+    def test_usesrid_error(self): # 授权失败，token
         buyer_id = self.buyer_id+"dfdf"
-        code = self.order.my_orders(buyer_id,self.token)
-        assert code != 200
+        code = self.order.order_status(buyer_id,self.order_id,self.token)
+        assert code == 401
+
 
     def test_orderid_not_exist(self):
-        order_id = self.order_id+"aaa"
+        order_id = self.order_id+"a"
         code = self.order.order_status(self.buyer_id,order_id,self.token)
-        assert code ==511
+        assert code == 518
         
     
 

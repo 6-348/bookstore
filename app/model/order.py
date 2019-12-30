@@ -20,7 +20,7 @@ def to_dict(result:object,dropwords:list)->dict:
 class Order():
     def __init__(self):
         self.engine = create_engine(Global.DbURL)
-        u = UsersMethod()
+        self.user_method= UsersMethod()
     def order_status(self,user_id:str,order_id:str,token:str)-> (str,str):
             '''
             0. check_token
@@ -30,20 +30,23 @@ class Order():
             如果订单存在 返回订单信息和code =200
             '''
             # check token 
-            code,message = u.check_token(token)
+            code,message = self.user_method.check_token(token,user_id)
             if(code!=200):
+                print(code,message)
                 return code,message
             # check order exist 
             session = create_session(self.engine)
             line  = session.query(Orders).filter(Orders.OrderId==order_id).first()
+            # userline = session.query(Users).filter(Users.UserId==user_id).first()
             session.close()
             if line == None:
                 logging.error(error.error_invalid_order_id(order_id))
                 return error.error_invalid_order_id(order_id)
             # order 存在， 查询OrderBooks
-            dic = to_dict(line,[])
-            line2  = session.query(OrderBooks).filter(Orders.OrderId==order_id).all()
-            dic_list = line2.apply(lambda x: to_dict(x,["OrderId"]))
+            dic = to_dict(line,["metadata"])
+            line2 = session.query(OrderBooks).filter(Orders.OrderId==order_id).all()
+            dic_list = [to_dict(x,["OrderId", "metadata"]) for x in line2]
+                # line2.apply(lambda x: to_dict(x,["OrderId","metadata"]))
             keys = list(dic_list[0].keys())
             dic2 = dict()
             for i in range(len(dic_list)):
@@ -51,8 +54,8 @@ class Order():
                     dic2[key+str(i)] = dic_list[i][key]
             dic_sum = dict(**dic,**dic2) # 合并字典
             logging.debug("dic_sum: " + message)
-            message = json.dumps(dic_sum)
-            return code,message
+            # message = json.dumps(dic_sum)
+            return code,dic_sum
 
     def my_orders(self,user_id:str,token:str)-> (str,str):
         """
@@ -60,7 +63,7 @@ class Order():
         1. 找出所有订单
         2. 返回
         """
-        code,message = u.check_token(user_id,token)
+        code,message = self.user_method.check_token(token,user_id)
         if(code!=200):
             return code,message
         session = create_session(self.engine)
@@ -95,7 +98,7 @@ class Order():
         @request: order_id, user_id,token
         :return:
         '''
-        code,message = u.check_token(user_id,token)
+        code,message = self.user_method.check_token(token,user_id)
         if(code!=200):
             return code,message
         session = create_session(self.engine)
