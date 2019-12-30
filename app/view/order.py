@@ -40,10 +40,15 @@ def my_orders():
     @request: user_id
     :return:
     '''
-    logging.debug("myorder has run", methods=["POST"])
+    logging.debug("------------------------------------myorder has run---------------------------------")
     user_id: str = request.json.get("user_id")
     token: str = request.headers.get("token")
-    code,message = order.my_orders(user_id,token)
+    logging.debug("token {}".format(token))
+    logging.debug(user_id)
+    code, message, orders = order.my_orders(user_id, token)
+    logging.debug(code)
+    logging.debug(message)
+    logging.debug(orders)
     return jsonify({"message": message}), code
 
 @bp_order.route("/user_cancel_order", methods=["POST"])  # 用户取消订单

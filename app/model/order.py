@@ -13,14 +13,14 @@ def to_dict(result:object,dropwords:list)->dict:
     for att in dir(result):
         if att.startswith("_") or att in dropwords:
             continue
-        value = getattr(result,att)
+        value = getattr(result, att)
         dic[att] = value
     return dic
 
 class Order():
     def __init__(self):
         self.engine = create_engine(Global.DbURL)
-        u = UsersMethod()
+        self.user_method = UsersMethod()
     def order_status(self,user_id:str,order_id:str,token:str)-> (str,str):
             '''
             0. check_token
@@ -35,15 +35,15 @@ class Order():
                 return code,message
             # check order exist 
             session = create_session(self.engine)
-            line  = session.query(Orders).filter(Orders.OrderId==order_id).first()
+            line  = session.query(Orders).filter(Orders.OrderId == order_id).first()
             session.close()
             if line == None:
                 logging.error(error.error_invalid_order_id(order_id))
                 return error.error_invalid_order_id(order_id)
             # order 存在， 查询OrderBooks
-            dic = to_dict(line,[])
-            line2  = session.query(OrderBooks).filter(Orders.OrderId==order_id).all()
-            dic_list = line2.apply(lambda x: to_dict(x,["OrderId"]))
+            dic = to_dict(line, ['metadata'])
+            line2 = session.query(OrderBooks).filter(Orders.OrderId==order_id).all()
+            dic_list = line2.apply(lambda x: to_dict(x, ["OrderId", 'metadata']))
             keys = list(dic_list[0].keys())
             dic2 = dict()
             for i in range(len(dic_list)):
@@ -54,31 +54,36 @@ class Order():
             message = json.dumps(dic_sum)
             return code,message
 
-    def my_orders(self,user_id:str,token:str)-> (str,str):
+    def my_orders(self,user_id:str, token:str)-> (str,str):
         """
         0. check token 
         1. 找出所有订单
         2. 返回
         """
-        code,message = u.check_token(user_id,token)
-        if(code!=200):
-            return code,message
+        code, message = self.user_method.check_token(token, user_id)
+        print(token)
+        print(user_id)
+        if code != 200:
+            print(65)
+            return code, message, None
         session = create_session(self.engine)
-        lines  = session.query(Orders,OrderBooks).filter(and_(Orders.UserId == user_id,Orders.OrderId==OrderBooks.OrderId)).all()
+        lines = session.query(Orders,  OrderBooks).filter(and_(Orders.UserId == user_id,Orders.OrderId == OrderBooks.OrderId)).all()
         session.close()
         if lines == None:
-            logging.error("you dont't have any orders" )
-            return 200,"you dont't have any orders"   
-        logging.debug(lines)   
+            print(70)
+            logging.error("you dont't have any orders")
+            return 200, "you dont't have any orders", None
         all_order = dict()
         for ord in lines:
-            dic1 = to_dict(ord.Orders,dropwords=[])
-            dic2 = to_dict(ord.OrderBooks,dropwords=["OrderId"])
-            dic = dict(**dic1,**dic2)
+            dic1 = to_dict(ord.Orders, dropwords=['metadata'])
+            dic2 = to_dict(ord.OrderBooks, dropwords=["OrderId", 'metadata'])
+            dic = dict(**dic1, **dic2)
             all_order[ord.Orders.OrderId] = dic
-        return 200, json.dumps(all_order)
+        logging.debug("My order successfully ")
+        code, message = error.success("myorder")
+        return code, message, all_order
 
-    def user_cancel_order(self,user_id,order_id,token):
+    def user_cancel_order(self, user_id, order_id, token):
         '''
         ### 步骤
         0. check_token
@@ -95,33 +100,34 @@ class Order():
         @request: order_id, user_id,token
         :return:
         '''
-        code,message = u.check_token(user_id,token)
-        if(code!=200):
+        code,message = self.user_method .check_token(user_id,token)
+        if code!=200 :
             return code,message
         session = create_session(self.engine)
-        line = session.query(Orders).filter(and_(Orders.OrderId==order_id)).first()
+        lines = session.query(Orders).filter(and_(Orders.OrderId==order_id))
+        line = lines[0]
         if line == None:
             return error.error_invalid_order_id(order_id)
-        if line.UserId!=user_id:
+        if line.UserId != user_id:
             return error.error_non_exist_user_id(user_id)
         if line.Status !="1":
             return error.error_order_can_not_be_cancelled(line.Status)
         
         # 修改Orders 
         session.execute(
-                update(Orders).where(Orders.OrderId==order_id).values(
-                {Orders.Status:"5"}))
+                update(Orders).where(Orders.OrderId == order_id).values(
+                {Orders.Status: "5"}))
         # Orders.Status = "5"
         logging.error("please examine here ------------------user_cancle_order")
 
         # 修改StoreBooks:
         store_id = line.StoreId
-        booklist = session.query(StoreBooks,OrderBooks).filter(and_(StoreBooks.StoreId==store_id,StoreBooks.BookId==OrderBooks.BookId)).all() 
+        booklist = session.query(StoreBooks,OrderBooks).filter(and_(StoreBooks.StoreId==store_id,StoreBooks.BookId == OrderBooks.BookId)).all()
         for book in booklist:
-            book.StoreBooks.Stock+=book.OrderBooks.Count
+            book.StoreBooks.Stock += book.OrderBooks.Count
             session.execute(
-                update(StoreBooks).where(StoreBooks.BookId==book.OrderBooks.BookId).values(
-                {StoreBooks.Stock:book.StoreBooks.Stock}))
+                update(StoreBooks).where(StoreBooks.BookId == book.OrderBooks.BookId).values(
+                { StoreBooks.Stock: book.StoreBooks.Stock}))
             # 可以这么玩吗》
             logging.error("please examine here ------------------user_cancle_order")
         session.commit()
@@ -140,14 +146,14 @@ class Order():
             order_id = line.OrderId
             # 修改Orders 
             session.execute(
-                    update(Orders).where(Orders.OrderId==order_id).values(
+                    update(Orders).where(Orders.OrderId == order_id).values(
                     {Orders.Status:"5"}))
             # Orders.Status = "5" # 可以这么玩吗》,可以注释掉execute吗？
             logging.error("please examine here ------------------user_cancle_order")
 
             # 修改StoreBooks:
             store_id = line.StoreId
-            booklist = session.query(StoreBooks,OrderBooks).filter(and_(StoreBooks.StoreId==store_id,StoreBooks.BookId==OrderBooks.BookId)).all() 
+            booklist = session.query(StoreBooks, OrderBooks).filter(and_(StoreBooks.StoreId == store_id, StoreBooks.BookId == OrderBooks.BookId)).all()
             for book in booklist:
                 book.StoreBooks.Stock+=book.OrderBooks.Count
                 session.execute(
