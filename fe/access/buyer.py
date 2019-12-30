@@ -35,16 +35,16 @@ class Buyer:
         r = requests.post(url, headers=headers, json=json)
         return r.status_code
 
-    def add_funds(self, add_value: str) -> int:
+    def add_funds(self, add_value) -> int:
         json = {"user_id": self.user_id, "password": self.password, "add_value": add_value}
         url = urljoin(self.url_prefix, "add_funds")
         headers = {"token": self.token}
         r = requests.post(url, headers=headers, json=json)
         return r.status_code
 
-    def comfirm_reception(self,user_id,order_id,password):
-        json = {"user_id": user_id, "password": password,"order_id":order_id}
-        url = urljoin(self.url_prefix, "comfirm_reception")
+    def confirm_reception(self, user_id, order_id, password):
+        json = {"user_id": user_id, "password": password, "order_id": order_id}
+        url = urljoin(self.url_prefix, "confirm_reception")
         headers = {"token": self.token}
         r = requests.post(url, headers=headers, json=json)
         return r.status_code

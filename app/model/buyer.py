@@ -97,7 +97,7 @@ class Buyer:
         if code!=200:
             print(98)
             return code,message
-        try: 
+        try:
             session = create_session(self.engine)
             orderlines = session.query(Orders).filter(Orders.OrderId==order_id)
             orderline = orderlines[0]
@@ -114,7 +114,7 @@ class Buyer:
                 return error.error_authorization_fail()
             elif userline.Balance < orderline.Amount:
                 print(113)
-                return error.error_not_sufficient_funds(order_id)        
+                return error.error_not_sufficient_funds(order_id)
             else:   # 修改数据库
                 orderline.Status = "2"
                 userline.Balance-=orderline.Amount
@@ -166,37 +166,38 @@ class Buyer:
 
     # 下为扩展接口
     # 提现
-    def withdraw(self,user_id, money, password, token):
+
+
+    def withdraw(self, user_id, money, password, token):
         '''
         @exception: token?, password? 余额不足？
         @params: user_id, money, password, token
         减少用户balance
         '''
         logging.debug("withdraw has run")
-        code,message = self.user_method.check_token(token, user_id)
-        if code!=200:
-            return code,message
+        code, message = self.user_method.check_token(token, user_id)
+        if code != 200:
+            return code, message
         try:
             session = create_session(self.engine)
-            line = session.query(Users).filter(Users.UserId==user_id).first()
-            if line.Password==password:
+            line = session.query(Users).filter(Users.UserId == user_id).first()
+            if line.Password == password:
                 return error.error_authorization_fail()
-            elif money<=0:
+            elif money <= 0:
                 return error.error_invalid_value(money)
-            elif line.Balance<money:
-                return error.error_not_sufficient_funds("about withdraw"+user_id)
-        # 修改数据库
-            line.update({"Balance":line.Balance-money})
+            elif line.Balance < money:
+                return error.error_not_sufficient_funds("about withdraw" + user_id)
+            # 修改数据库
+            line.update({"Balance": line.Balance - money})
             session.commit()
         except Exception as e:
             logging.error("app.model.withdraw.py line 161 {}".format(e))
             session.rollback()
         finally:
-            session.close()       
+            session.close()
         return error.success("withdraw")
-
     # 确认收货
-    def comfirm_receiption(self,user_id,order_id,password,token):
+    def confirm_reception(self,user_id,order_id,password,token):
         '''
         @exception: token? order_id 存在？ Orders.Status==3? password right?
         @params: order_id, user_id, password,token
@@ -206,31 +207,36 @@ class Buyer:
         logging.debug("withdraw has run")
         code,message = self.user_method.check_token(token, user_id)
         if code!=200:
-            return code,message
+            return code, message
         try:
             session = create_session(self.engine)
-            orderline = session.query(Orders).filter(Orders.OrderId==order_id).first()
-            userline = session.query(Users).filter(Users.UserId==user_id).first()
-            if orderline == None:
+            orderlines = session.query(Orders).filter(Orders.OrderId==order_id)
+            userlines = session.query(Users).filter(Users.UserId==user_id)
+            userline = userlines[0]
+            orderline = orderlines[0]
+            if orderlines == None:
                 return error.error_invalid_order_id(order_id)
             if orderline.UserId != order_id:
                 return error.error_invalid_order_id(order_id)
-            if userline==None:
+            if userlines==None:
                 return error.error_exist_user_id(user_id)
             if userline.Password==password:
                 return error.error_authorization_fail()
             store_id = orderline.StoreId
-            storeline = session.query(Stores).filter(Stores.StoreId==store_id).first()
+            storelines = session.query(Stores).filter(Stores.StoreId==store_id)
+            storeline = storelines[0]
              # 修改数据库
-            storeline.update({"Balance":storeline.Balance+orderline.Amount})
-            orderline.update({"Status":"4"})
+            storelines.update({"Balance": storeline.Balance+orderline.Amount})
+            orderlines.update({"Status": "4"})
             session.commit()
+            return error.success("confirm_reception")
         except Exception as e:
-            logging.error("app.model.comfirm_receiption.py line 197 {}".format(e))
+            logging.error("app.model.confirm_reception.py line 197 {}".format(e))
             session.rollback()
+            return error.error_and_message(110, "commit fail")
         finally:
             session.close()       
-        return error.success("comfirm_receiption")       
+
 
 
 
@@ -263,12 +269,14 @@ class Buyer:
             storeline.update({"Balance":storeline.Balance-amount})
             userline.update({"Balance":userline.Balance-amount})
             session.commit()
+            return error.success("transfer_to_user")
         except Exception as e:
             logging.error("app.model.transfer_to_user.py line 243 {}".format(e))
             session.rollback()
+            return error.error_and_message(110,"commit fail")
         finally:
             session.close()             
-        return error.success("transfer_to_user")
+
 
 
             

@@ -59,20 +59,21 @@ def withdraw():
     return jsonify({"message": message}), code
 
 
-@bp_buyer.route("/comfirm_receiption", methods=["POST"])  # 确认收货
+@bp_buyer.route("/confirm_reception", methods=["POST"])  # 确认收货
 def comfirm_receiption():
-    logging.debug("comfirm_receiption has run")
+    logging.debug("confirm_reception has run")
     order_id: str = request.json.get("order_id")
     user_id: str = request.json.get("user_id")
     token: str = request.headers.get("token")
     password: str = request.json.get("password")
-    code,message =buy.comfirm_receiption(user_id,order_id,password,token)
-    return code,message
+    code,message = buy.confirm_reception(user_id, order_id, password, token)
+    logging.debug("{}:{}".format(code, message))
+    return jsonify({"message": message}), code
 
 
 @bp_buyer.route("/transfer_to_user", methods=["POST"]) # 商户账户转账至拥有至拥有者账户
 def transfer_to_user():
-    logging.debug("comfirm_receiption has run")
+    logging.debug("confirm_reception has run")
     store_id: str = request.json.get("store_id")
     user_id: str = request.json.get("user_id")
     token: str = request.headers.get("token")

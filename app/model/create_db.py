@@ -90,7 +90,7 @@ class BookPictures(Base):
 
 class Orders(Base):
     __tablename__ = 'Orders'
-    OrderId = Column(String(100), Sequence('order_id_seq'), primary_key=True)
+    OrderId = Column(String(1000), Sequence('order_id_seq'), primary_key=True)
     StoreId = Column(ForeignKey("Stores.StoreId"), nullable=False)
     UserId = Column(ForeignKey("Users.UserId"), nullable=False)
     Status = Column(String(50), nullable=False)

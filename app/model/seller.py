@@ -217,36 +217,38 @@ class Seller():
         return error.success("add Stock")
 
 # 扩展接口
-    def delivery_books(self,seller_id:str,order_id:str,token: str)->(str,str):
+    def delivery_books(self,seller_id:str, order_id:str, token: str)->(str,str):
         # check token
-        code,message = self.user_method.check_token(seller_id,token)
+        code,message = self.user_method.check_token(token,seller_id)
         if(code!=200):
             logging.debug("stop in check_token")
             return code,message
         try: 
             session = create_session(self.engine)
             # 该订单不存在
-            order = session.query(Orders).filter(Orders.OrderId==order_id).first()
+            orderline  = session.query(Orders).filter(Orders.OrderId == order_id)
+            order = orderline[0]
             if order == None:
                 return error.error_invalid_order_id(order_id)
             # 订单非已付款的状态
-            if order.Status==3:
+            if order.Status=='3':
                 return error.error_repeated_operation("delivery books")
-            if order.Status==1:
+            if order.Status=='1':
                 return error.error_order_steate_not_right("Unpayed order")
-            if order.Status==5:
+            if order.Status=='5':
                 return error.error_order_steate_not_right("Fail order")
-            if order.Status==4:
+            if order.Status=='4':
                 return error.error_order_steate_not_right("finished order")
-            # 修改订单状态：  
-            session.execute(
-                        update(Orders).where(Orders.OrderId==order_id).values(
-                        {Orders.Status:"3"}))
+            # 修改订单状态：
+            orderline.update(
+                {Orders.Status: "3"}
+            )
             session.commit()
-        except Exception as e :
+            print(error.success("Dlivery books"))
+            return error.success("Dlivery books")
+        except Exception as e:
             logging.error("app.model.seller.py dlivery_books line 185:{}".format(e))
             session.rollback()
+            return error.error_and_message("110","commit fail")
         finally:
             session.close()
-        print(error.success("Dlivery books"))
-        return error.success("Dlivery books")
