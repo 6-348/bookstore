@@ -165,6 +165,36 @@ class Buyer:
 
 
     # 下为扩展接口
+    # 提现
+    def withdraw(self,user_id, money, password, token):
+        '''
+        @exception: token?, password? 余额不足？
+        @params: user_id, money, password, token
+        减少用户balance
+        '''
+        logging.debug("withdraw has run")
+        code,message = self.user_method.check_token(token, user_id)
+        if code!=200:
+            return code,message
+        try:
+            session = create_session(self.engine)
+            line = session.query(Users).filter(Users.UserId==user_id).first()
+            if line.Password==password:
+                return error.error_authorization_fail()
+            elif money<=0:
+                return error.error_invalid_value(money)
+            elif line.Balance<money:
+                return error.error_not_sufficient_funds("about withdraw"+user_id)
+        # 修改数据库
+            line.update({"Balance":line.Balance-money})
+            session.commit()
+        except Exception as e:
+            logging.error("app.model.withdraw.py line 161 {}".format(e))
+            session.rollback()
+        finally:
+            session.close()       
+        return error.success("withdraw")
+        
     # 确认收货
     def confirm_reception(self,user_id,order_id,password,token):
         '''

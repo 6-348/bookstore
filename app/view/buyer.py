@@ -71,14 +71,5 @@ def confirm_reception():
     return jsonify({"message": message}), code
 
 
-@bp_buyer.route("/transfer_to_user", methods=["POST"]) # 商户账户转账至拥有至拥有者账户
-def transfer_to_user():
-    logging.debug("confirm_reception has run")
-    store_id: str = request.json.get("store_id")
-    user_id: str = request.json.get("user_id")
-    token: str = request.headers.get("token")
-    password: str = request.json.get("password")
-    amount: str = request.json.get("amount")
-    code,message =buy.transfer_to_user(user_id,store_id,password,amount,token)
-    return code,message
+
 

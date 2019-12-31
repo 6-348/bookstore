@@ -256,3 +256,39 @@ class Seller():
             return error.error_and_message("110","commit fail")
         finally:
             session.close()
+
+# 商户账户转账至拥有至拥有者账户
+    def transfer_to_user(self,user_id,store_id,password,amount,token):
+        '''
+        @exception： token? store_id exist? password right? balance suffient?
+        @params: user_id, password, amount, store_id
+        事务：
+        5. 修改store.balance
+        6. 修改users.balance
+        '''
+        logging.debug("withdraw has run")
+        code,message = self.user_method.check_token(token, user_id)
+        if code!=200:
+            return code,message
+        try:
+            session = create_session(self.engine)
+            userline = session.query(Users).filter(Users.UserId==user_id).first()
+            storeline = session.query(Stores).filter(Stores.StoreId==store_id).first()
+            if userline.Password==password:
+                return error.error_authorization_fail()
+            elif amount<=0:
+                return error.error_invalid_value(amount)
+            elif userline.Balance<amount:
+                return error.error_not_sufficient_funds("about withdraw"+user_id)
+            if storeline==None:
+                return error.error_non_exist_store_id(store_id)
+        # 修改数据库
+            storeline.update({"Balance":storeline.Balance-amount})
+            userline.update({"Balance":userline.Balance-amount})
+            session.commit()
+        except Exception as e:
+            logging.error("app.model.transfer_to_user.py line 243 {}".format(e))
+            session.rollback()
+        finally:
+            session.close()             
+        return error.success("transfer_to_user")

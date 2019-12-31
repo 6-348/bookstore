@@ -48,3 +48,10 @@ class Buyer:
         headers = {"token": self.token}
         r = requests.post(url, headers=headers, json=json)
         return r.status_code
+
+    def withdraw(self, user_id, money, password):
+        json = {"user_id": user_id, "password": password, "money": money}
+        url = urljoin(self.url_prefix, "withdraw")
+        headers = {"tooken": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code

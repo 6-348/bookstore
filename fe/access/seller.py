@@ -62,3 +62,16 @@ class Seller:
         headers = {"token": self.token}
         r = requests.post(url, headers=headers, json=json)
         return r.status_code
+
+    def transfer_to_user(self, user_id: str, store_id: str, password: str, amount) -> int:
+        json = {
+            "user_id": user_id,
+            "store_id": store_id,
+            "password": password,
+            "amount": amount
+        }
+        #print(simplejson.dumps(json))
+        url = urljoin(self.url_prefix, "transfer_to_user")
+        headers = {"token": self.token}
+        r = requests.post(url, headers=headers, json=json)
+        return r.status_code
