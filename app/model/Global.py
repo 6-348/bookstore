@@ -2,8 +2,8 @@ import time
 from datetime import datetime,timedelta
 SECRET_KEY='deddddddddddv'
 order_timeout_delta =  timedelta(hours = 12)  # 订单过时的期限
-DbURL  = "postgresql://postgres:mwj1314520@localhost/BookStore"
-# DbURL= 'postgresql+psycopg2://postgres:0710@localhost/BookStore'
+# DbURL  = "postgresql://postgres:mwj1314520@localhost/BookStore"
+DbURL= 'postgresql+psycopg2://postgres:0710@localhost/BookStoreMaster'
 TokenTimeout = timedelta(hours=6)   # token 过期期限
 PicturePath = "./../static/pictures/"
 

@@ -3,6 +3,7 @@ import threading
 from urllib.parse import urljoin
 from app import main
 from fe import conf
+import logging
 
 thread: threading.Thread = None
 
@@ -11,6 +12,12 @@ thread: threading.Thread = None
 def run_backend():
     # rewrite this if rewrite backend
     # serve.be_run()
+
+    logging.basicConfig(filename='flask.log', level=logging.INFO,
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler = logging.StreamHandler()
+    logging.getLogger().addHandler(handler)
+
     main.create_app()
 
 

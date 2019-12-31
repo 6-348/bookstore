@@ -32,6 +32,7 @@ class Buyer:
         # logging.debug("user_id:{},store_id:{}".format(user_id, store_id))
         timestr = datetime.now().strftime('%a-%b-%d-%H-%M-%S.%f')
         order_id =store_id+user_id+timestr+str(np.random.randint(0, 100)) # order_id 的生成
+        # order_id = store_id + user_id + timestr  # order_id 的生成
         code,message = self.user_method.check_token(token, user_id)
         if code!=200:
             # logging.debug("{}:{}".format(code, message))
