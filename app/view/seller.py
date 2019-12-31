@@ -71,7 +71,7 @@ def delivery_books():
     return jsonify({"message": message}), code
 
 
-@bp_buyer.route("/transfer_to_user", methods=["POST"]) # 商户账户转账至拥有至拥有者账户
+@bp_seller.route("/transfer_to_user", methods=["POST"]) # 商户账户转账至拥有至拥有者账户
 def transfer_to_user():
     logging.debug("confirm_reception has run")
     store_id: str = request.json.get("store_id")

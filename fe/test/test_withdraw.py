@@ -6,14 +6,14 @@ import uuid
 from fe.access.auth import Auth
 from fe import conf
 
-class TestConfirm:
+class TestWithdraw:
     user_id: str
     user_password: str
     user: Buyer
 
     @pytest.fixture(autouse=True)
     def pre_run_initialization(self):
-        self.user_id = "test_confirm_buyer_id_{}".format(str(uuid.uuid1()))
+        self.user_id = "test_withdraw_buyer_id_{}".format(str(uuid.uuid1()))
         self.terminal = str(uuid.uuid1())
         self.password = self.user_id
         self.user = register_new_buyer(self.user_id, self.password)
@@ -23,22 +23,25 @@ class TestConfirm:
         assert code == 200
         yield
 
+    def test_ok(self):
+        code = self.user.withdraw(self.user_id,self.fund,self.password)
+        assert code == 200
 
-'''@exception: token?password?'''
+    '''@exception: token?password?'''
     def test_authorization_error(self):
         password = self.password+"@@"
-        code = self.buyer.withdraw(self.user_id,self.fund,self.password,self.token)
+        code = self.user.withdraw(self.user_id,self.fund,password)
         assert code == 401
 
-'''@exception: 余额不足?'''
+    '''@exception: 余额不足?'''
     def test_not_suff_fund_error(self):
         fund = self.fund+20
-        code = self.buyer.withdraw(self.user_id,fund,self.password,self.token)
+        code = self.user.withdraw(self.user_id,fund,self.password)
         assert code == 519
 
-'''@exception: 金额为负?'''
+    '''@exception: 金额为负?'''
     def test_invalid_amount_error(self):
-         code = self.buyer.withdraw(self.user_id,-10,self.password,self.token)
-        assert code == 525
+         code = self.user.withdraw(self.user_id,-10,self.password)
+         assert code == 525
 
 

@@ -179,7 +179,7 @@ class Buyer:
         try:
             session = create_session(self.engine)
             line = session.query(Users).filter(Users.UserId==user_id).first()
-            if line.Password==password:
+            if line.Password !=password:
                 return error.error_authorization_fail()
             elif money<=0:
                 return error.error_invalid_value(money)
